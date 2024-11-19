@@ -7,6 +7,7 @@ public class Main extends JFrame {
 	Menu frameMenu;
 	Game game;
 	WaitingRoom waitingRoom;
+	String nickname;
 
 	private String background_music = "src/audio/music.wav";
 
@@ -23,14 +24,14 @@ public class Main extends JFrame {
 		PlayMusic.load_backgroundAudio(background_music);
 
 		frameMenu = new Menu(); // 시작화면
-		frameMenu.waitForClose();
+		nickname = frameMenu.waitForClose();
 
-		startWaitingRoom();
+		startWaitingRoom(nickname);
 	}
 
-	public void startWaitingRoom(String mode, String nickname) {
+	public void startWaitingRoom(String nickname) {
 		frameMenu.setVisible(false);
-		waitingRoom = new WaitingRoom(mode, nickname);
+		waitingRoom = new WaitingRoom(nickname);
 		waitingRoom.waitForClose();
 		startGame(4);
 	}

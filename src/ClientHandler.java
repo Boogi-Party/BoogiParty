@@ -23,7 +23,6 @@ public class ClientHandler extends Thread {
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) { // 클라이언트로부터 메시지 수신
                 System.out.println("Received: " + clientMessage); // 서버 콘솔에 출력
-                broadcastMessage(clientMessage); // 다른 클라이언트들에게 메시지 전달
             }
 
         } catch (IOException e) {
@@ -35,20 +34,6 @@ public class ClientHandler extends Thread {
                 System.out.println("Client disconnected.");
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-        }
-    }
-
-    // 메시지를 브로드캐스트 (모든 클라이언트에게 전달)
-    private void broadcastMessage(String message) {
-        synchronized (ServerThread.class) { // 스레드 간 동기화
-            for (Socket socket : ServerThread.clients) {
-                try {
-                    PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
-                    pw.println(message); // 메시지 전송
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }

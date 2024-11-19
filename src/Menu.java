@@ -11,7 +11,6 @@ public class Menu extends JFrame {
     private JTextField nicknameField;
     private boolean closed = false;
     private String nickname;
-    private WaitingRoom waitingRoom;
 
     public Menu() {
         // 프레임 설정
@@ -94,18 +93,12 @@ public class Menu extends JFrame {
             return;
         }
 
-        // 서버 쓰레드 시작
-        new ServerThread().start();
-
-        // 클라이언트로 자신도 서버에 연결
-        connectToServer();
-
         // 시작 화면 닫기
         dispose();
         closed = true;
     }
 
-    public void waitForClose() {
+    public String waitForClose() {
         while (!closed) {
             try {
                 Thread.sleep(100);
@@ -113,6 +106,7 @@ public class Menu extends JFrame {
                 e.printStackTrace();
             }
         }
+        return nickname;
     }
 
     private void joinGame() {
@@ -121,27 +115,9 @@ public class Menu extends JFrame {
             JOptionPane.showMessageDialog(this, "Please enter a nickname.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // 클라이언트로 서버에 연결
-        connectToServer();
-
         // 시작 화면 닫기
         dispose();
         closed = true;
     }
 
-    private void connectToServer() {
-        try {
-            // 서버 소켓에 연결
-            Socket socket = new Socket("localhost", 12345); // 로컬 호스트로 연결
-            System.out.println(nickname + " connected to server!");
-
-            // 클라이언트 쓰레드 시작
-            new ClientThread(socket, nickname).start();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Failed to connect to the server.", "Connection Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 }

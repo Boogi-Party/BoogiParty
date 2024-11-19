@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class ClientThread extends Thread {
+class ClientThread extends Thread {
     private Socket socket;
     private String nickname;
     private BufferedReader in;
