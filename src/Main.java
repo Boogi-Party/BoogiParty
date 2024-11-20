@@ -27,6 +27,7 @@ public class Main extends JFrame {
 		nickname = frameMenu.waitForClose();
 
 		startWaitingRoom(nickname);
+
 	}
 
 	public void startWaitingRoom(String nickname) {
