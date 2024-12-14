@@ -1,0 +1,152 @@
+package client;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+public class WaitingRoom extends JPanel {
+    private boolean closed = false;
+    private String nickname;
+    private int num;
+    protected ArrayList<JLabel> usernames = new ArrayList<>();
+    protected JTextArea chatArea;
+    private ClientThread clientThread;
+    private RoomThread roomThread;
+    private JTextField chatInputField;
+
+    JPanel rightPanel;
+    JPanel leftPanel;
+    private JPanel parentPanel; // 부모 컨테이너 (RoomList에서 전달)
+
+    public WaitingRoom(String nickname, int port, JPanel parentPanel) {
+        clientThread = new ClientThread(this, port, nickname);
+        this.nickname = nickname;
+        this.parentPanel = parentPanel;
+
+        setSize(800, 600);
+        setLayout(new BorderLayout());
+
+        // 메인 패널
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(1, 2)); // 1행 2열 레이아웃
+        add(mainPanel, BorderLayout.CENTER);
+
+        // 왼쪽 패널 (User 패널)
+        leftPanel = new JPanel();
+        leftPanel.setLayout(new GridLayout(4, 1, 10, 10)); // 클라이언트 수에 맞춤
+        leftPanel.setBackground(new Color(200, 200, 255)); // 연한 파란색 배경
+        mainPanel.add(leftPanel);
+
+        // 오른쪽 패널 (채팅창 및 버튼)
+        rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+        rightPanel.setBackground(new Color(255, 240, 200)); // 연한 주황색 배경
+        mainPanel.add(rightPanel);
+
+        // 유저 패널 동적 추가 (왼쪽)
+        for (int i = 0; i < 4; i++) {
+            JPanel userPanel = new JPanel();
+            userPanel.setBackground(new Color(220, 220, 255)); // 연한 색
+            userPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            JLabel userLabel = new JLabel("User " + i);
+            usernames.add(userLabel);
+            userPanel.add(userLabel); // 유저 이름 (추후 업데이트 가능)
+            leftPanel.add(userPanel);
+        }
+
+        // 채팅창 추가 (오른쪽 CENTER)
+        chatArea = new JTextArea();
+        chatArea.setEditable(false);
+        chatArea.setLineWrap(true);
+        chatArea.setWrapStyleWord(true);
+        JScrollPane chatScroll = new JScrollPane(chatArea);
+        chatScroll.setPreferredSize(new Dimension(0, 0)); // BorderLayout에서는 크기 자동 조정
+        rightPanel.add(chatScroll, BorderLayout.CENTER);
+
+        // 텍스트 입력 필드 및 버튼 패널 (오른쪽 SOUTH)
+        JPanel inputPanel = new JPanel(new BorderLayout()); // 입력 필드와 버튼을 포함하는 패널
+
+        // 텍스트 입력 필드
+        chatInputField = new JTextField();
+        chatInputField.setFont(new Font("Arial", Font.PLAIN, 16));
+        chatInputField.setPreferredSize(new Dimension(0, 30)); // 높이 조정
+        inputPanel.add(chatInputField, BorderLayout.CENTER);
+
+        JButton sendButton = new JButton("보내기"); // 새로 추가된 버튼
+        sendButton.setPreferredSize(new Dimension(80, 30));
+
+        // 텍스트 입력 필드 이벤트 리스너 (Enter 키)
+        chatInputField.addActionListener(sendMessageAction);
+        // "보내기" 버튼 이벤트 리스너
+        sendButton.addActionListener(sendMessageAction);
+
+        // 버튼 패널
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // 버튼 중앙 정렬
+        buttonPanel.setPreferredSize(new Dimension(0, 50)); // 높이 조정
+
+        // "나가기" 버튼 추가
+        JButton exitButton = new JButton("나가기");
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exitRoom();
+            }
+        });
+
+        buttonPanel.add(exitButton);
+
+        // 버튼 패널을 inputPanel의 SOUTH에 추가
+        inputPanel.add(buttonPanel, BorderLayout.SOUTH);
+        inputPanel.add(chatInputField, BorderLayout.CENTER); // 텍스트 필드
+        inputPanel.add(sendButton, BorderLayout.EAST);       // 보내기 버튼 추가
+
+        // inputPanel을 오른쪽 패널의 SOUTH에 추가
+        rightPanel.add(inputPanel, BorderLayout.SOUTH);
+
+        clientThread.connectToServer();
+
+        // 화면 표시
+        setVisible(true);
+    }
+
+    private void exitRoom() {
+        try {
+            // 클라이언트 스레드 종료
+            synchronized (this) {
+                clientThread.closeConnection();
+
+                closed = true;
+
+                // UI 갱신
+                SwingUtilities.invokeLater(() -> {
+                    parentPanel.removeAll();
+                    parentPanel.add(new RoomList(nickname)); // RoomList로 돌아가기
+                    parentPanel.revalidate();
+                    parentPanel.repaint();
+                });
+            }
+        } catch (Exception e) {
+            System.err.println("Error during exitRoom: " + e.getMessage());
+        }
+    }
+
+    // 액션 이벤트 리스너 (Enter 키와 버튼 클릭 공유)
+    ActionListener sendMessageAction = e -> {
+        String message = chatInputField.getText();
+        if (!chatInputField.getText().trim().isEmpty()) { // 빈 메시지 방지
+            clientThread.sendMessage(message);
+            chatInputField.setText(""); // 입력 필드 비우기
+            chatInputField.requestFocus(); // 포커스 유지
+        }
+    };
+
+    public void appendText(String msg) {
+        SwingUtilities.invokeLater(() -> {
+            chatArea.append(msg + "\n"); // 메시지 추가
+            chatArea.setCaretPosition(chatArea.getDocument().getLength()); // 스크롤 자동 이동
+        });
+    }
+
+}
