@@ -181,8 +181,6 @@ public class GameGUI extends JPanel {
 		repaint();
 	}
 
-	
-
 	public void playerMove(Player _nowPlayer, Point _interPoint) {
 		JLabel label = playerLabel[_nowPlayer.getID()];
 		label.setLocation(_interPoint);
