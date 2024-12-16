@@ -95,7 +95,6 @@ public class Menu extends JFrame {
             JOptionPane.showMessageDialog(this, "Please enter a nickname.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         getContentPane().removeAll();
 
         // 새 패널 추가

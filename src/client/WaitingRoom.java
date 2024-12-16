@@ -7,22 +7,21 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class WaitingRoom extends JPanel {
-    private boolean closed = false;
     private String nickname;
-    private int num;
     protected ArrayList<JLabel> usernames = new ArrayList<>();
     protected JTextArea chatArea;
     private ClientThread clientThread;
-    private RoomThread roomThread;
     private JTextField chatInputField;
 
     JPanel rightPanel;
     JPanel leftPanel;
     private JPanel parentPanel; // 부모 컨테이너 (RoomList에서 전달)
+    private String hostname; // 호스트 여부
 
     public WaitingRoom(String nickname, int port, JPanel parentPanel) {
         clientThread = new ClientThread(this, port, nickname);
         this.nickname = nickname;
+        this.hostname = hostname; // 호스트 여부 설정
         this.parentPanel = parentPanel;
 
         setSize(800, 600);
@@ -113,11 +112,12 @@ public class WaitingRoom extends JPanel {
 
     private void exitRoom() {
         try {
+
+            clientThread.sendMessage("UPDATE_HOST");
+
             // 클라이언트 스레드 종료
             synchronized (this) {
                 clientThread.closeConnection();
-
-                closed = true;
 
                 // UI 갱신
                 SwingUtilities.invokeLater(() -> {

@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 
 public class Main extends JFrame {
@@ -28,6 +27,7 @@ public class Main extends JFrame {
 	}
 
 	public void startGame(int numPlayer) {
+		removeAll();
 		frameMenu.setVisible(false);
 		game = new Game(this, numPlayer);
 		game.start();

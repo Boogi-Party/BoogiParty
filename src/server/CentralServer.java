@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class CentralChatServer {
+public class CentralServer {
     private static final int PORT = 9999;
     private static final ArrayList<RoomThread> rooms = new ArrayList<>();
     private static int count = 0;
@@ -34,9 +34,10 @@ public class CentralChatServer {
 
             String command = in.readLine();
 
+
             if ("CREATE_ROOM".equalsIgnoreCase(command)) {
-                // 방 생성 요청 처리
-                RoomThread roomThread = createRoom();
+                String hostname = in.readLine(); // 클라이언트에서 호스트 이름 전송 받기
+                RoomThread roomThread = createRoom(hostname); // 호스트 이름 전달
                 out.println("Room Created: ID=" + roomThread.getRoomId() + ", Port=" + roomThread.getPort());
             } else if ("GET_ROOM".equalsIgnoreCase(command)) {
                 // 방 목록 요청 처리
@@ -62,8 +63,8 @@ public class CentralChatServer {
         }
     }
 
-    private static RoomThread createRoom() {
-        RoomThread roomThread = new RoomThread(count++, CentralChatServer::onEmptyRoom);
+    private static RoomThread createRoom(String hostname) {
+        RoomThread roomThread = new RoomThread(count++, CentralServer::onEmptyRoom, hostname);
         synchronized (rooms) {
             rooms.add(roomThread);
         }
