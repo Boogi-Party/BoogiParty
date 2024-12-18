@@ -251,9 +251,9 @@ public class GameGUI extends JPanel {
 		/********* SHOW PLAYER ICONS *********/
 		playerLabel = new JLabel[4];
 		for (int i = 0; i < 4; i++) {
-			//Point point = pointManager.getPlayerPoint(i, 0);
+			Point point = pointManager.getPlayerPoint(i, 0);
 			playerLabel[i] = new JLabel(imagePlayer[i]);
-			playerLabel[i].setLocation(20, 30);
+			playerLabel[i].setLocation(point.x, point.y);
 			playerLabel[i].setSize(30, 30);
 			playerLabel[i].setVisible(false);
 			add(playerLabel[i]);
@@ -346,8 +346,11 @@ public class GameGUI extends JPanel {
 				for (int i = 0; i < dice; i++) {
 					move(idx);
 				}
-
 				offDiceNumber(dice);
+
+				reachGround(idx);
+				sameGround(idx);
+
 			}
 		}).start();
 	}
@@ -377,6 +380,59 @@ public class GameGUI extends JPanel {
 		label.setLocation(_interPoint);
 	}
 
+	public void reachGround(int idx) {
+		Player player = playerList.get(idx);
+		if (player.getPosition() == 4) {
+			new Map4_GBBGame(player);
+		} else if (player.getPosition() == 8) {
+			new Map8_GamblingWIthThread(player);
+		} else if (player.getPosition() == 12) {
+			new Map12_BulletGameFrame(player);
+		} else if (player.getPosition() == 0) {
+
+		} else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
+				|| player.getPosition() == 14) {
+			new Quiz(player);
+			//new Game.Map8_GamblingWIthThread(player);
+		}
+	}
+
+	public void sameGround(int idx) {
+		System.out.println("this.playerIdx : " + playerIdx);
+		Player player = playerList.get(idx);
+		int nowPlayer_arrive = player.getPosition(); // 현재 플레이어의 위치값 저장
+		for (int i = 0; i < numPlayer; i++) { // 플레이어 수 만큼 반복
+			if (idx != i) { // 만약 i가 현재 플레이어의 인덱스를 지칭하는 게 아닐 경우
+				int check_overlap = playerList.get(i).getPosition();
+				if (nowPlayer_arrive == check_overlap) { // 만약 기존 플레이어가 잡힌 경우
+					System.out.println("same pos between " + idx + "and " + i);
+					//JOptionPane.showMessageDialog(null, "' " + playerList.get(i).getName() + " '" + "를 잡았다!");
+					overlap_move(playerList.get(i));
+					break;
+				}
+			}
+		}
+	}
+
+	public void overlap_move(Player player) { // 만약 같은 위치에 있는 경우 기존 플레이어 시작으로 보냄
+		int ID = player.getID();
+		System.out.println("reset player : " + ID);
+		Point catchMove = pointManager.getPlayerPoint(ID, player.getPosition());
+
+		for (int i = 0; i < 10; i++) {
+			Point interPoint = new Point(catchMove.x, (catchMove.y - (i * 10)));
+			try {
+				playerMove(player, interPoint);
+				Thread.sleep(10);
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			}
+		}
+		player.resetPosition();
+		Point startPoint = pointManager.getPlayerPoint(ID, 0);
+		PlayMusic.play_actionSound("src/audio/SameGround.wav");
+		playerMove(player, startPoint);
+	}
 
 
 	public void offRollingDice() {
