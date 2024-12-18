@@ -398,14 +398,12 @@ public class GameGUI extends JPanel {
 	}
 
 	public void sameGround(int idx) {
-		System.out.println("this.playerIdx : " + playerIdx);
 		Player player = playerList.get(idx);
 		int nowPlayer_arrive = player.getPosition(); // 현재 플레이어의 위치값 저장
 		for (int i = 0; i < numPlayer; i++) { // 플레이어 수 만큼 반복
 			if (idx != i) { // 만약 i가 현재 플레이어의 인덱스를 지칭하는 게 아닐 경우
 				int check_overlap = playerList.get(i).getPosition();
 				if (nowPlayer_arrive == check_overlap) { // 만약 기존 플레이어가 잡힌 경우
-					System.out.println("same pos between " + idx + "and " + i);
 					//JOptionPane.showMessageDialog(null, "' " + playerList.get(i).getName() + " '" + "를 잡았다!");
 					overlap_move(playerList.get(i));
 					break;
