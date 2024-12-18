@@ -1,22 +1,20 @@
+package Game;
+
+import client.Main;
+import client.PlayMusic;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Map4_GBBGame extends JFrame { //ctrl shift o ////외부에서는 이 배열 접근하지 못하게 private
@@ -25,7 +23,7 @@ public class Map4_GBBGame extends JFrame { //ctrl shift o ////외부에서는 �
 							new ImageIcon(Main.class.getResource("images/bawi.jpg")),   
 							new ImageIcon(Main.class.getResource("images/bo.jpg")) } ;
 			 //ctrl shift o
-	//ImageIcon playerIcon1 = new ImageIcon(Main.class.getResource("images/bo.jpg"));
+	//ImageIcon playerIcon1 = new ImageIcon(client.Main.class.getResource("images/bo.jpg"));
 	private static String SAME="same!";   //static 하면 객체생성 전부터 관리할 수 있음
 	private static String ME_win= "ME!!!";
 	private static String COM_win="COMPUTER!!!";
@@ -35,7 +33,7 @@ public class Map4_GBBGame extends JFrame { //ctrl shift o ////외부에서는 �
 	private GamePanel gamePanel =new GamePanel();
 	private Player player;  // 멤버 변수로 선언
 	//생성자
-	public Map4_GBBGame(Player player){ //Panel객체 만들었으니까, 배치를 Map4_GBBGame 생성자에서 하자.
+	public Map4_GBBGame(Player player){ //Panel객체 만들었으니까, 배치를 Game.Map4_GBBGame 생성자에서 하자.
 		super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌.
 		this.player = player;  // 생성자에서 초기화
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

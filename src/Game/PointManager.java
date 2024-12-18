@@ -1,6 +1,8 @@
+package Game;
+
 import java.awt.Point;
 
-class 	PointManager {
+class  PointManager {
 	
 	Point[][] playerPoint;
 	

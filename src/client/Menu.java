@@ -1,22 +1,23 @@
-import client.RoomList;
+package client;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class Menu extends JFrame {
+public class Menu extends JPanel {
     private JTextField nicknameField;
-    private boolean closed = false;
     private String nickname;
+    Main parent;
     JPanel jpanel;
 
-    public Menu() {
+    public Menu(Main main) {
         // 프레임 설정
-        setTitle("Marble Game");
         setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+
+        this.parent = main;
+        //Game 실행 시 스크린 크기 변해서 필요함
+        parent.setScreenNotGameSize();
 
         // 패널 및 레이아웃 설정
         jpanel = new JPanel(new GridBagLayout());
@@ -51,7 +52,6 @@ public class Menu extends JFrame {
         // 버튼 패널 (가로 배치)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0)); // 가로 배치, 버튼 간 간격 20px
 
-
         JButton joinButton = new JButton("Join Game");
         joinButton.setFont(new Font("Arial", Font.BOLD, 24));
         joinButton.addActionListener(new ActionListener() {
@@ -77,29 +77,17 @@ public class Menu extends JFrame {
         setVisible(true);
     }
 
-
-    public String waitForClose() {
-        while (!closed) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return nickname;
-    }
-
     private void joinGame() {
         nickname = nicknameField.getText();
         if (nickname.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter a nickname.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        getContentPane().removeAll();
 
         // 새 패널 추가
-        RoomList roomList = new RoomList(nickname);
-        getContentPane().add(roomList);
+        RoomList roomList = new RoomList(nickname, parent);
+
+        parent.setPanel(roomList);
 
         // UI 갱신
         revalidate();

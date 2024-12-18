@@ -1,3 +1,8 @@
+package Game;
+
+import client.Main;
+import client.PlayMusic;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -6,14 +11,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -64,9 +63,9 @@ public class Map12_BulletGameFrame extends JFrame {
 			baseLabel.setBackground(Color.BLACK);
 
 			ImageIcon img = new ImageIcon(Main.class.getResource("images/pig.png"));
-			//Main.class.getResource("images/Board/player0_info.png")
+			//client.Main.class.getResource("images/Board/player0_info.png")
 			//ImageIcon img = new ImageIcon("./src/images/pig.png");
-			//new ImageIcon(Main.class.getResource("images/Board/player0_info.png"));
+			//new ImageIcon(client.Main.class.getResource("images/Board/player0_info.png"));
 			targetLabel = new JLabel(img);
 			targetLabel.setSize(img.getIconWidth(), img.getIconWidth());
 

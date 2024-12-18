@@ -1,5 +1,7 @@
 package client;
 
+import Game.GameGUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,16 +17,22 @@ public class WaitingRoom extends JPanel {
 
     JPanel rightPanel;
     JPanel leftPanel;
-    private JPanel parentPanel; // 부모 컨테이너 (RoomList에서 전달)
-    private String hostname; // 호스트 여부
+    ArrayList<JLabel> userLabels = new ArrayList<>();
+    protected String hostname; // 호스트 여부
+    private Main parent;
 
-    public WaitingRoom(String nickname, int port, JPanel parentPanel) {
+    private boolean isReady = false; // 게임 준비 상태
+    private JButton readyButton; // 준비 버튼
+    protected JButton gameStartButton; // 게임 시작 버튼
+    JButton exitButton;
+
+    public WaitingRoom(String nickname, int port, Main parent) {
         clientThread = new ClientThread(this, port, nickname);
         this.nickname = nickname;
         this.hostname = hostname; // 호스트 여부 설정
-        this.parentPanel = parentPanel;
+        this.parent = parent;
 
-        setSize(800, 600);
+        parent.setScreenNotGameSize();
         setLayout(new BorderLayout());
 
         // 메인 패널
@@ -53,6 +61,7 @@ public class WaitingRoom extends JPanel {
             usernames.add(userLabel);
             userPanel.add(userLabel); // 유저 이름 (추후 업데이트 가능)
             leftPanel.add(userPanel);
+            userLabels.add(userLabel);
         }
 
         // 채팅창 추가 (오른쪽 CENTER)
@@ -73,7 +82,7 @@ public class WaitingRoom extends JPanel {
         chatInputField.setPreferredSize(new Dimension(0, 30)); // 높이 조정
         inputPanel.add(chatInputField, BorderLayout.CENTER);
 
-        JButton sendButton = new JButton("보내기"); // 새로 추가된 버튼
+        JButton sendButton = new JButton("보내기");
         sendButton.setPreferredSize(new Dimension(80, 30));
 
         // 텍스트 입력 필드 이벤트 리스너 (Enter 키)
@@ -86,7 +95,7 @@ public class WaitingRoom extends JPanel {
         buttonPanel.setPreferredSize(new Dimension(0, 50)); // 높이 조정
 
         // "나가기" 버튼 추가
-        JButton exitButton = new JButton("나가기");
+        exitButton  = new JButton("나가기");
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -106,13 +115,49 @@ public class WaitingRoom extends JPanel {
 
         clientThread.connectToServer();
 
+
+        // 게임 시작 버튼 추가
+        if (hostname.equals(nickname)) {
+            gameStartButton = new JButton("게임 시작");
+            gameStartButton.setPreferredSize(new Dimension(100, 40));
+            gameStartButton.setEnabled(false); // 초기에는 비활성화
+            gameStartButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    clientThread.sendMessage("START_GAME");
+                }
+            });
+            buttonPanel.add(gameStartButton);
+        }
+        else {
+            // 준비 상태 버튼 추가
+            readyButton = new JButton("준비");
+            readyButton.setPreferredSize(new Dimension(100, 40));
+            readyButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    toggleReadyState();
+                }
+            });
+            buttonPanel.add(readyButton);
+        }
+
         // 화면 표시
-        setVisible(true);
+        //setVisible(true);
+    }
+    private void toggleReadyState() {
+        isReady = !isReady;
+        readyButton.setText(isReady ? "준비 해제" : "준비");
+        if (isReady) {
+            exitButton.setEnabled(false);
+        } else {
+            exitButton.setEnabled(true);
+        }
+        clientThread.sendMessage("READY_STATE/" + nickname + "/" + (isReady ? "READY" : "NOT_READY"));
     }
 
     private void exitRoom() {
         try {
-
             clientThread.sendMessage("UPDATE_HOST");
 
             // 클라이언트 스레드 종료
@@ -121,10 +166,7 @@ public class WaitingRoom extends JPanel {
 
                 // UI 갱신
                 SwingUtilities.invokeLater(() -> {
-                    parentPanel.removeAll();
-                    parentPanel.add(new RoomList(nickname)); // RoomList로 돌아가기
-                    parentPanel.revalidate();
-                    parentPanel.repaint();
+                   parent.setPanel(new RoomList(nickname, parent));
                 });
             }
         } catch (Exception e) {
@@ -149,4 +191,9 @@ public class WaitingRoom extends JPanel {
         });
     }
 
+    protected GameGUI gameStart(int numPlayer, String[] playerInfo) {
+        GameGUI gameGUI = new GameGUI(clientThread, parent, numPlayer, playerInfo);
+        parent.setPanel(gameGUI);
+        return gameGUI;
+    }
 }

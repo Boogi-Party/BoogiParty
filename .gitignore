@@ -1,0 +1,9 @@
+# IntelliJ 프로젝트 설정 폴더 제외
+.idea/
+*.iml
+
+# 빌드 및 실행 결과물 제외
+bin/
+out/
+*.class
+*.log
