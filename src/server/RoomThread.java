@@ -124,11 +124,18 @@ public class RoomThread extends Thread {
         }
     }
 
-
-    private void broadcastRollDice(String num, int dice) {
+    private void broadcastRollDice(String playerNum, int dice) {
         synchronized (clients) {
             for (UserThread user : clients) {
-                user.sendMessage("ROLL_DICE/" + num + "/" + dice);
+                user.sendMessage("ROLL_DICE/" + playerNum + "/" + dice);
+            }
+        }
+    }
+
+    private void broadcastMiniGame(String playerNum, String gameType) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("MINI_GAME/" + playerNum + "/" + gameType);
             }
         }
     }
@@ -164,7 +171,6 @@ public class RoomThread extends Thread {
             }
         }
 
-
         public String getUserName() {
             return userName;
         }
@@ -193,11 +199,14 @@ public class RoomThread extends Thread {
                     }
                     else if (command.equals("ROLL_DICE")) {
                         //System.out.println("now player : " + game.getPlayerIdx());
-                        if (game.getPlayerIdx() == Integer.parseInt(parts[1])) {
+                        if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
                             int dice = game.rollDice();
 
                             broadcastRollDice(parts[1], dice);
                          }
+                    }
+                    else if (command.equals("MINI_GAME")) {
+                        broadcastMiniGame(parts[1], parts[2]);
                     }
                     else {
                         broadcastMessage(userName + " : " +message); // 메시지 브로드캐스트

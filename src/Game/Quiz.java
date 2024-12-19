@@ -32,7 +32,6 @@ public class Quiz extends JFrame {
         //setLocationRelativeTo(null);
         setVisible(true);
         
-      
 
         // 레이아웃 설정
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));

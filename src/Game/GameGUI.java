@@ -177,8 +177,6 @@ public class GameGUI extends JPanel {
 
 				JButton submitButton = new JButton("Submit");
 
-
-
 				submitButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -348,13 +346,14 @@ public class GameGUI extends JPanel {
 				}
 				offDiceNumber(dice);
 
-				reachGround(idx);
+				if (playerIdx == idx) {
+					reachGround(idx);
+				}
 				sameGround(idx);
 
 			}
 		}).start();
 	}
-
 
 	public void move(int idx) {
 		Player player = playerList.get(idx);
@@ -374,7 +373,6 @@ public class GameGUI extends JPanel {
 		playerMove(player, nextPoint);
 	}
 
-
 	public void playerMove(Player _nowPlayer, Point _interPoint) {
 		JLabel label = playerLabel[_nowPlayer.getID()];
 		label.setLocation(_interPoint);
@@ -383,16 +381,17 @@ public class GameGUI extends JPanel {
 	public void reachGround(int idx) {
 		Player player = playerList.get(idx);
 		if (player.getPosition() == 4) {
-			new Map4_GBBGame(player);
+			clientThread.sendMessage("MINI_GAME/" + idx + "/4");
 		} else if (player.getPosition() == 8) {
-			new Map8_GamblingWIthThread(player);
+			clientThread.sendMessage("MINI_GAME/" + idx + "/8");
 		} else if (player.getPosition() == 12) {
-			new Map12_BulletGameFrame(player);
+			clientThread.sendMessage("MINI_GAME/" + idx + "/12");
 		} else if (player.getPosition() == 0) {
 
 		} else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
 				|| player.getPosition() == 14) {
-			new Quiz(player);
+			//clientThread.sendMessage("QUIZ/" + idx + "/4");
+			//new Quiz(player);
 			//new Game.Map8_GamblingWIthThread(player);
 		}
 	}
@@ -433,6 +432,70 @@ public class GameGUI extends JPanel {
 	}
 
 
+	public void Item_plus_move(Player player) {
+		int ID = player.getID();
+		int current_Position = player.getPosition();
+		Point catchMove2 = pointManager.getPlayerPoint(ID, current_Position);
+
+		for (int i = 0; i < 10; i++) {
+			Point interPoint = new Point((catchMove2.x - (i * 10)), (catchMove2.y - (i * 10)));
+			try {
+				playerMove(player, interPoint);
+				Thread.sleep(20);
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			}
+		}
+		Point plusPoint = pointManager.getPlayerPoint(ID, player.item_plus_Position());
+		playerMove(player, plusPoint);
+	}
+
+	//Item_attack_move
+	public void Item_attack_move(Player player) {
+		int max=0;
+		int maxPlayerIdx = 0;
+
+		for(int i = 0; i < numPlayer ; i++) { // 플레이어 수 만큼 반복
+			if(playerIdx != i) { // 만약 i가 현재 플레이어의 인덱스를 지칭하는 게 아닐 경우
+				if(max < playerList.get(i).getPosition()) {
+					max = playerList.get(i).getPosition();
+					maxPlayerIdx = i;
+				}
+			}
+		}
+
+		int ID = player.getID();
+		Point jumpMove = pointManager.getPlayerPoint(ID, player.getPosition());
+
+		for (int i = 0; i < 10; i++) {
+			Point interPoint = new Point((jumpMove.x + (i * 10)), (jumpMove.y - (i * 10)));
+			try {
+				playerMove(player, interPoint);
+				Thread.sleep(20);
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			}
+		}
+
+		player.setPosition(max);
+		Point jumpPoint = pointManager.getPlayerPoint(ID, max);
+		playerMove(player, jumpPoint);
+		overlap_move(playerList.get(maxPlayerIdx));
+	}
+
+		public void miniGameStart(int idx, int gameType) {
+			Player player = playerList.get(idx);
+			System.out.println("is player : " + (idx == playerIdx));
+			if (gameType == 4) {
+				new Map4_GBBGame(player, idx == playerIdx, parent);
+			} else if (gameType == 8) {
+				new Map8_GamblingWIthThread(player, idx == playerIdx, parent);
+			} else if (gameType == 12) {
+				new Map12_BulletGameFrame(player, idx == playerIdx, parent);
+			}
+		}
+
+
 	public void offRollingDice() {
 		rollDice = false;
 	}
@@ -463,7 +526,4 @@ public class GameGUI extends JPanel {
 		paintComponents(g);
 		repaint();
 	}
-
-
-
 }

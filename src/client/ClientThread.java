@@ -110,10 +110,11 @@ public class ClientThread extends Thread {
                 }
                 //여기에 게임 로직 구현~!~!#~!@#@#$#!@$@#
                 else if ("ROLL_DICE".equals(command)) {
-                    System.out.println("move " +  Integer.parseInt(parts[1] +  Integer.parseInt(parts[2])));
                     gameGUI.rollDiceMotion(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 }
-
+                else if ("MINI_GAME".equals(command)) {
+                    gameGUI.miniGameStart(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+                }
 
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력

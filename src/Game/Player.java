@@ -58,7 +58,10 @@ public class Player {
 		return name;
 	}
 	public void setCoin(int coin) { //setter
-	        this.coin = coin;
+		if (coin <= 0) {
+			coin = 0;
+		}
+		this.coin = coin;
 	}
 	public int getCoin() { //getter
 		return coin;

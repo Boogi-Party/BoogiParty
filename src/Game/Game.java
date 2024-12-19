@@ -4,24 +4,14 @@ import client.Main;
 import client.PlayMusic;
 import server.RoomThread;
 
-import java.awt.Color;
-import java.awt.Font;
+
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Random;
 
-import javax.sound.sampled.Clip;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
+
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.LineBorder;
+
 // 여기 추가해야 됨
 
 public class Game extends Thread {
@@ -36,12 +26,19 @@ public class Game extends Thread {
 	public GameGUI gameGUI;
 	ArrayList<Player> playerList;
 
+	private volatile boolean isMiniGameRunning;
+
 	RoomThread roomThread;
 	int dice;
 
 	public Game(RoomThread roomThread) {
 		this.roomThread = roomThread;
 		numPlayer =  roomThread.getClients();
+		isMiniGameRunning = false;
+	}
+
+	public boolean getIsMiniGameRunning() {
+		return isMiniGameRunning;
 	}
 
 	public int getPlayerIdx() {
@@ -118,86 +115,33 @@ public class Game extends Thread {
 		System.exit(0);
 	}
 
-
-
 	public int rollDice() {
-		dice = new Random().nextInt(6) + 1;
+		//dice = new Random().nextInt(6) + 1;
+		dice = 4;
 		playerIdx = (playerIdx + 1) % numPlayer;
 		//System.out.println("Player updated : " + playerIdx);
 		return dice;
 	}
 
-	public void overlap_move(Player player) { // 만약 같은 위치에 있는 경우 기존 플레이어 시작으로 보냄
-		int ID = player.getID();
-		Point catchMove = pointManager.getPlayerPoint(ID, player.getPosition());
 
-		for (int i = 0; i < 10; i++) {
-			Point interPoint = new Point(catchMove.x, (catchMove.y - (i * 10)));
-			try {
-				gameGUI.playerMove(player, interPoint);
-				Thread.sleep(10);
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
+	public int reachGround(int idx) {
+		Player player = playerList.get(idx);
+		if (player.getPosition() == 4) {
+			return 4;
+		} else if (player.getPosition() == 8) {
+			return 8;
+		} else if (player.getPosition() == 12) {
+			return 12;
 		}
-		player.resetPosition();
-		Point startPoint = pointManager.getPlayerPoint(ID, 0);
-		PlayMusic.play_actionSound("src/audio/SameGround.wav");
-		gameGUI.playerMove(player, startPoint);
-	}
-
-	public void Item_plus_move(Player player) {
-		int ID = player.getID();
-		int current_Position = player.getPosition();
-		Point catchMove2 = pointManager.getPlayerPoint(ID, current_Position);
-
-		for (int i = 0; i < 10; i++) {
-			Point interPoint = new Point((catchMove2.x - (i * 10)), (catchMove2.y - (i * 10)));
-			try {
-				gameGUI.playerMove(player, interPoint);
-				Thread.sleep(20);
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
-		}
-		Point plusPoint = pointManager.getPlayerPoint(ID, player.item_plus_Position());
-		gameGUI.playerMove(player, plusPoint);
-	}
-
-	//Item_attack_move
-	public void Item_attack_move(Player player) {
-		int max=0;
-		int maxPlayerIdx = 0;
-
-		for(int i = 0; i < numPlayer ; i++) { // 플레이어 수 만큼 반복
-    		if(playerIdx != i) { // 만약 i가 현재 플레이어의 인덱스를 지칭하는 게 아닐 경우
-    			if(max < playerList.get(i).getPosition()) {
-    				max = playerList.get(i).getPosition();
-    				maxPlayerIdx = i;
-    			}
-    		}
-    	}
-
-		int ID = player.getID();
-		Point jumpMove = pointManager.getPlayerPoint(ID, player.getPosition());
-
-		for (int i = 0; i < 10; i++) {
-			Point interPoint = new Point((jumpMove.x + (i * 10)), (jumpMove.y - (i * 10)));
-			try {
-				gameGUI.playerMove(player, interPoint);
-				Thread.sleep(20);
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
-		}
-
-		player.setPosition(max);
-		Point jumpPoint = pointManager.getPlayerPoint(ID, max);
-		gameGUI.playerMove(player, jumpPoint);
-		overlap_move(playerList.get(maxPlayerIdx));
+		return 0;
 	}
 
 
+	public void startMinigame() {
+		isMiniGameRunning = true;
+
+		isMiniGameRunning = false;
+	}
 
 	public void close() {
 		this.interrupt();

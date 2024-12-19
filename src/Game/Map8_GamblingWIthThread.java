@@ -12,16 +12,28 @@ import javax.swing.*;//아스테리스크 쓰면 다른거 다 import
 public class Map8_GamblingWIthThread extends JFrame {
 	
 	private Player player;  // 멤버 변수로 선언
+	private boolean isPlayer;
 	public Clip clip;
-	public Map8_GamblingWIthThread(Player player) { //생성자.
+	public Map8_GamblingWIthThread(Player player, boolean isPlayer, JFrame parentFrame) { //생성자.
 		super("미니게임- 도전 겜블링");
 		this.player = player;
+		this.isPlayer = isPlayer;
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		setContentPane(new GamePanel()); //패널 부착
 		setSize(320,200);
-		setLocation(13, 570);
+		if (parentFrame != null) {
+			int parentX = parentFrame.getX();
+			int parentY = parentFrame.getY();
+			int parentWidth = parentFrame.getWidth();
+			int parentHeight = parentFrame.getHeight();
+
+			// 자식 JFrame의 위치 계산
+			int x = parentX + (parentWidth - getWidth()) / 2;
+			int y = parentY + (parentHeight - getHeight()) / 2;
+			setLocation(x, y);
+		}
 		setVisible(true);
 		//setLocation(400,300);//기본은 (0,0)
 		
@@ -54,15 +66,17 @@ public class Map8_GamblingWIthThread extends JFrame {
 			add(result); //화면에다가 부착
 			
 			th.start(); //thread 가동. 자동으로 run메소드를 부른다.
-			
-			addMouseListener(new MouseAdapter(){//이벤트객체를 만들어서 여기에 넣어라.
-			//리스너에 경우는 추상메소드가 있어서 구현을 해야함. 근데 Adapter의 경우는 클래스이기 때문에 기본적인 코드가 있어서
-			//우리가 쓰고자하는거 하나만 오버라이딩하면됨.
-				public void mousePressed(MouseEvent e) { //
-					if(th.isReady())
-						th.startGambling(); //마우스에 의해 isReady에 의해 false가 true가 되고 startGambling으로 스레드꺠운다.
-				}
-			});
+
+			if (isPlayer) {
+				addMouseListener(new MouseAdapter() {//이벤트객체를 만들어서 여기에 넣어라.
+					//리스너에 경우는 추상메소드가 있어서 구현을 해야함. 근데 Adapter의 경우는 클래스이기 때문에 기본적인 코드가 있어서
+					//우리가 쓰고자하는거 하나만 오버라이딩하면됨.
+					public void mousePressed(MouseEvent e) { //
+						if (th.isReady())
+							th.startGambling(); //마우스에 의해 isReady에 의해 false가 true가 되고 startGambling으로 스레드꺠운다.
+					}
+				});
+			}
 			//addKeyListener 추가하면 //Enter키를 입력받아서 할 수도 있음
 		}
 	}
