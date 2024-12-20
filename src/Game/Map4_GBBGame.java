@@ -1,5 +1,5 @@
-package Game;
 //src/Game/Map4_GBBGame.java
+package Game;
 import client.Main;
 import client.PlayMusic;
 
@@ -17,7 +17,24 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class Map4_GBBGame extends JFrame { //ctrl shift o ////외부에서는 이 배열 접근하지 못하게 private
+public class Map4_GBBGame extends JFrame implements MiniGame{ //ctrl shift o ////외부에서는 이 배열 접근하지 못하게 private
+
+//	private boolean isGameEnded = false;
+	private boolean gameEnded = false; // 게임 종료 상태를 추적하는 플래그
+
+	@Override
+	public void onMiniGameEnd() {
+		if (!gameEnded) {
+			gameEnded = true;
+			System.out.println("Map4 가위바위보 게임 종료");
+			dispose(); // 창 닫기
+		}
+	}
+	@Override
+	public boolean isGameEnded() {
+		return gameEnded; // 현재 게임 종료 상태 반환
+	}
+
 	//속성
 	private ImageIcon[] gbbImage = {new ImageIcon(Main.class.getResource("/images/gawi.jpg")), //image관리하는 component //이미지 3장이니까 배열. 레퍼런스 변수 선언
 							new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
@@ -66,6 +83,7 @@ public class Map4_GBBGame extends JFrame { //ctrl shift o ////외부에서는 �
 		}
 
 		setVisible(true);
+		System.out.println("Map4 가위바위보 게임 시작");
 	}
 	
 	class MenuPanel extends JPanel{ //ctrl shift o
