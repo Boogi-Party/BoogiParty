@@ -22,14 +22,16 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Map12_BulletGameFrame extends JFrame {
-	public Player player; // 멤버 변수로 선언
 	private int hit_cnt = 0;
 	//private SoundEffect soundEffect ;
 	public Clip clip;
-	
+
+	private Player player; // 멤버 변수로 선언
+	private boolean isPlayer;
 		
-	public Map12_BulletGameFrame(Player player) {
+	public Map12_BulletGameFrame(Player player, boolean isPlayer, JFrame  parentFrame) {
 		this.player = player;
+		this.isPlayer = isPlayer;
 		setTitle("미니게임- 돼지 사냥");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -39,8 +41,17 @@ public class Map12_BulletGameFrame extends JFrame {
 		
 		setContentPane(p);
 		setSize(300, 300); //1280 - 300 980
-		setLocation(1005, 50);
-		setResizable(false);
+		if (parentFrame != null) {
+			int parentX = parentFrame.getX();
+			int parentY = parentFrame.getY();
+			int parentWidth = parentFrame.getWidth();
+			int parentHeight = parentFrame.getHeight();
+
+			// 자식 JFrame의 위치 계산
+			int x = parentX + (parentWidth - getWidth()) / 2;
+			int y = parentY + (parentHeight - getHeight()) / 2;
+			setLocation(x, y);
+		}
 		//setLocationRelativeTo(null); // 화면 가운데에 창 위치
 		setVisible(true);
 		p.startGame();
@@ -62,7 +73,7 @@ public class Map12_BulletGameFrame extends JFrame {
 			baseLabel.setOpaque(true);
 			baseLabel.setBackground(Color.BLACK);
 
-			ImageIcon img = new ImageIcon(Main.class.getResource("images/pig.png"));
+			ImageIcon img = new ImageIcon(Main.class.getResource("/images/pig.png"));
 			//client.Main.class.getResource("images/Board/player0_info.png")
 			//ImageIcon img = new ImageIcon("./src/images/pig.png");
 			//new ImageIcon(client.Main.class.getResource("images/Board/player0_info.png"));
@@ -85,13 +96,15 @@ public class Map12_BulletGameFrame extends JFrame {
 			add(bulletLabel);
 			add(shotCountLabel);
 
-			this.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(MouseEvent e) {
-					baseLabel.setFocusable(true);
-					baseLabel.requestFocus();
-				}
-			});
+			if (isPlayer) {
+				this.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent e) {
+						baseLabel.setFocusable(true);
+						baseLabel.requestFocus();
+					}
+				});
+			}
 		}
 
 		public void startGame() {
@@ -105,38 +118,40 @@ public class Map12_BulletGameFrame extends JFrame {
 			baseLabel.setFocusable(true);
 			baseLabel.requestFocus();
 
-			baseLabel.addKeyListener(new KeyAdapter() {
-				@Override
-				public void keyPressed(KeyEvent e) {
-					if (e.getKeyChar() == '\n') {
-						if (bulletThread == null || !bulletThread.isAlive()) {
-							bulletThread = new BulletThread(bulletLabel, targetLabel, targetThread);
-							bulletThread.start();
-							//soundEffect.playSound("src/audio/M1-Sound.wav",false);
-							
-							shotCount++;
-							updateShotCountLabel();
-							PlayMusic.play_actionSound("src/audio/M1-Sound.wav");
-							if (shotCount == 3) {
-							    Timer timer = new Timer(2000, new ActionListener() {
-							        public void actionPerformed(ActionEvent e) {
-							        	PlayMusic.play_actionSound("src/audio/PigEnd.wav");
-							            JOptionPane.showMessageDialog(null,
-							                "사격 완료\n명중 : " + hit_cnt + "발 / 보상 : " + (hit_cnt * 20), "알림",
-							                JOptionPane.INFORMATION_MESSAGE);
-							            
-							            player.setCoin(player.getCoin() + 20 * hit_cnt);
-							            dispose();
-							        }
-							    });
-							    timer.setRepeats(false); // 타이머가 한 번만 실행되도록 설정
-							    timer.start(); // 타이머 시작
-							}
+			if (isPlayer) {
+				baseLabel.addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyPressed(KeyEvent e) {
+						if (e.getKeyChar() == '\n') {
+							if (bulletThread == null || !bulletThread.isAlive()) {
+								bulletThread = new BulletThread(bulletLabel, targetLabel, targetThread);
+								bulletThread.start();
+								//soundEffect.playSound("src/audio/M1-Sound.wav",false);
 
+								shotCount++;
+								updateShotCountLabel();
+								PlayMusic.play_actionSound("src/audio/M1-Sound.wav");
+								if (shotCount == 3) {
+									Timer timer = new Timer(2000, new ActionListener() {
+										public void actionPerformed(ActionEvent e) {
+											PlayMusic.play_actionSound("src/audio/PigEnd.wav");
+											JOptionPane.showMessageDialog(null,
+													"사격 완료\n명중 : " + hit_cnt + "발 / 보상 : " + (hit_cnt * 20), "알림",
+													JOptionPane.INFORMATION_MESSAGE);
+
+											player.setCoin(player.getCoin() + 20 * hit_cnt);
+											dispose();
+										}
+									});
+									timer.setRepeats(false); // 타이머가 한 번만 실행되도록 설정
+									timer.start(); // 타이머 시작
+								}
+
+							}
 						}
 					}
-				}
-			});
+				});
+			}
 		}
 
 		class TargetThread extends Thread {
