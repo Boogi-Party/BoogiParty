@@ -33,12 +33,6 @@ public class GameGUI extends JPanel {
     private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("/images/menuBar.png")));
 
 
-	private Image screenImage;
-	private Image background = new ImageIcon(Main.class.getResource("/images/Board/board.png")).getImage();
-	private Image rollingDice = new ImageIcon(Main.class.getResource("/images/rollingDice_3.gif")).getImage();
-	private ImageIcon[] imagePlayer;
-
-
 	public JLabel[] playerLabel;
 	private JLabel[] diceNumber;
 
@@ -563,16 +557,6 @@ public class GameGUI extends JPanel {
 		overlap_move(playerList.get(maxPlayerIdx));
 	}
 
-	public void miniGameStart(int idx, int gameType) {
-		Player player = playerList.get(idx);
-		if (gameType == 4) {
-			new Map4_GBBGame(player, idx == playerIdx, parent);
-		} else if (gameType == 8) {
-			new Map8_GamblingWIthThread(player, idx == playerIdx, parent);
-		} else if (gameType == 12) {
-			new Map12_BulletGameFrame(player, idx == playerIdx, parent);
-		}
-	}
 
   public void miniGameStart(int idx, int gameType) {
     Player player = playerList.get(idx);
