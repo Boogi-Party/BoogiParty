@@ -1,5 +1,5 @@
-package client;
 //src/client/ClientThread.java
+package client;
 import Game.GameGUI;
 
 import javax.swing.*;
@@ -68,7 +68,8 @@ public class ClientThread extends Thread {
         while (running) { // 플래그를 확인
             try {
                 String message = dis.readUTF(); // 메시지 수신
-                String[] parts = message.split("/", 3);
+                String[] parts = message.split("/", 4);
+//                System.out.println("Command: " + parts[0] + ", PlayerIdx: " + parts[1] + ", GameType: " + parts[2] + ", State: " + parts[3]);
 
                 String command = parts[0];
 
@@ -90,12 +91,12 @@ public class ClientThread extends Thread {
                     updateHostName();
                 }
                 else if ("READY_STATE".equals(command)) {
-                    if (parts.length == 3) {
+//                    if (parts.length == 3) {
                         String user = parts[1];
                         String state = parts[2];
                         boolean isReady = "READY".equalsIgnoreCase(state);
                         updateReadyState(user, isReady); // UI 업데이트
-                    }
+//                    }
                 }
                 else if ("ENABLE_GAME_START".equals(command)) {
                     enableGameStartButton(true); // 게임 시작 버튼 활성화
@@ -115,9 +116,28 @@ public class ClientThread extends Thread {
                 else if ("MINI_GAME".equals(command)) {
                     gameGUI.miniGameStart(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 }
+
                 else if ("IN_GAME_MSG".equals(command)) {
                     gameGUI.renderChatMessage(Integer.parseInt(parts[1]), parts[2]);
                 }
+
+                else if ("MINI_GAME_STATE".equals(command)) {
+                    int playerIdx = Integer.parseInt(parts[1]); // 미니게임을 수행하는 플레이어
+                    int gameType = Integer.parseInt(parts[2]); // 미니게임 유형
+                    String state = parts[3]; // 미니게임 상태 (START, END 등)
+
+                    if ("START".equals(state)) {
+                        gameGUI.miniGameStart(playerIdx, gameType);
+                    } else if ("END".equals(state)) {
+                        gameGUI.endMiniGame(playerIdx, gameType); // 미니게임 종료 처리
+                    }
+                }
+
+
+
+
+
+
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력
                 }

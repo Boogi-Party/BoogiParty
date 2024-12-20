@@ -22,7 +22,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class Map12_BulletGameFrame extends JFrame {
+public class Map12_BulletGameFrame extends JFrame implements MiniGame {
+	private boolean gameEnded = false; // 게임 종료 상태를 추적하는 플래그
+
+	@Override
+	public void onMiniGameEnd() {
+		System.out.println("Map12 돼지 사냥 게임 종료");
+	}
+	@Override
+	public boolean isGameEnded() {
+		return gameEnded; // 현재 게임 종료 상태 반환
+	}
 	private int hit_cnt = 0;
 	//private SoundEffect soundEffect ;
 	public Clip clip;
@@ -56,7 +66,10 @@ public class Map12_BulletGameFrame extends JFrame {
 		//setLocationRelativeTo(null); // 화면 가운데에 창 위치
 		setVisible(true);
 		p.startGame();
+		System.out.println("Map12 돼지 사냥 게임 시작");
 	}
+
+
 
 	class GamePanel extends JPanel {
 		private TargetThread targetThread = null;

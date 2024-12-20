@@ -10,8 +10,18 @@ import javax.sound.sampled.Clip;
 import javax.swing.*;//아스테리스크 쓰면 다른거 다 import
 
 
-public class Map8_GamblingWIthThread extends JFrame {
-	
+public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
+	private boolean gameEnded = false; // 게임 종료 상태를 추적하는 플래그
+	@Override
+	public void onMiniGameEnd() {
+		// 미니게임 종료 후 작업
+		System.out.println("Map8 도박 게임 종료");
+	}
+	@Override
+	public boolean isGameEnded() {
+		return gameEnded; // 현재 게임 종료 상태 반환
+	}
+
 	private Player player;  // 멤버 변수로 선언
 	private boolean isPlayer;
 	public Clip clip;
@@ -36,6 +46,7 @@ public class Map8_GamblingWIthThread extends JFrame {
 			setLocation(x, y);
 		}
 		setVisible(true);
+		System.out.println("Map8 도박 게임 시작");
 		//setLocation(400,300);//기본은 (0,0)
 		
 	}

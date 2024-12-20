@@ -1,5 +1,6 @@
 package server;
 //src/server/RoomThread.java
+
 import Game.Game;
 
 import java.io.*;
@@ -143,6 +144,7 @@ public class RoomThread extends Thread {
         }
     }
 
+
     private void broadcastInGameMessage(String playerNum, String msg) {
         synchronized (clients) {
             for (UserThread user : clients) {
@@ -150,6 +152,18 @@ public class RoomThread extends Thread {
             }
         }
     }
+
+
+    private void broadcastMiniGameState(int playerIdx, int gameType, String state) {
+        synchronized (clients) {
+            String message = "MINI_GAME_STATE/" + playerIdx + "/" + gameType + "/" + state;
+            for (UserThread client : clients) {
+                client.sendMessage(message);
+            }
+        }
+    }
+
+
 
     private void closeRoom() {
         isRoomActive = false;
@@ -191,38 +205,51 @@ public class RoomThread extends Thread {
             try {
                 while (true) {
                     String message = dis.readUTF();
-                    String[] parts = message.split("/", 3);
+                    String[] parts = message.split("/", 4);
 
                     String command = parts[0];
 
                     if (command.equals("EXIT_ROOM")) {
                         break;
-                    }
-                    else if (command.equals("START_GAME")) {
+                    } else if (command.equals("START_GAME")) {
                         broadcastGameStart(); // 모든 클라이언트에 게임 시작 명령
-                    }
-                    else if (command.equals("READY_STATE")) {
-                        if (parts.length == 3) {
+                    } else if (command.equals("READY_STATE")) {
+//                        if (parts.length == 3) {
                             String user = parts[1];
                             String state = parts[2];
                             broadcastReadyState(user, state);
-                        }
-                    }
-                    else if (command.equals("ROLL_DICE")) {
+
+                    } else if (command.equals("ROLL_DICE")) {
+                        // parts[1]: 플레이어 번호, parts[2]: 주사위 값
+                        //System.out.println("now player : " + game.getPlayerIdx());
+
                         if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
                             int dice = game.rollDice();
 
-                            broadcastRollDice(parts[1], dice);
-                         }
+                            broadcastRollDice(parts[1], dice); // 결과를 다른 클라이언트로 브로드캐스트
+                        }
                     }
                     else if (command.equals("MINI_GAME")) {
-                        broadcastMiniGame(parts[1], parts[2]);
+                        // parts[1]: 플레이어 번호, parts[2]: 상태 (START)
+                        broadcastMiniGame(parts[1], parts[2]); // 미니게임 상태를 다른 클라이언트로 브로드캐스트
                     }
+
                     else if (command.equals("IN_GAME_MSG")) {
                         broadcastInGameMessage(parts[1], parts[2]);
                     }
+
+                    else if (command.equals("MINI_GAME_STATE")) {
+                        int playerIdx = Integer.parseInt(parts[1]);
+                        int gameType = Integer.parseInt(parts[2]);
+                        String state = parts[3];
+
+                        broadcastMiniGameState(playerIdx, gameType, state);
+                    }
+
+
+
                     else {
-                        broadcastMessage(userName + " : " +message); // 메시지 브로드캐스트
+                        broadcastMessage(userName + " : " + message); // 메시지 브로드캐스트
                     }
                 }
             } catch (IOException e) {
@@ -232,6 +259,7 @@ public class RoomThread extends Thread {
                 closeConnection();
             }
         }
+
         private void sendInitialReadyStates() {
             synchronized (readyStates) {
                 for (Map.Entry<String, Boolean> entry : readyStates.entrySet()) {
@@ -325,6 +353,7 @@ public class RoomThread extends Thread {
                 }
             }
         }
+
         private boolean allReady() {
             synchronized (readyStates) {
                 // 호스트 제외 모든 사용자가 준비 상태인지 확인
@@ -336,7 +365,6 @@ public class RoomThread extends Thread {
                 return true;
             }
         }
-
 
 
     }

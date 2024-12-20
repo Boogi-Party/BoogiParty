@@ -1,5 +1,5 @@
-package Game;
 //src/Game/GameGUI.java
+package Game;
 
 import client.ClientThread;
 import client.Main;
@@ -18,12 +18,20 @@ import javax.swing.border.LineBorder;
 
 @SuppressWarnings("serial")
 public class GameGUI extends JPanel {
-	Color[] playerColors = {
-			new Color(173, 216, 230), // Light Blue
-			new Color(152, 251, 152), // Pale Green
-			new Color(255, 182, 193), // Light Pink
-			new Color(230, 230, 250)  // Lavender
-	};
+    Color[] playerColors = {
+            new Color(173, 216, 230), // Light Blue
+            new Color(152, 251, 152), // Pale Green
+            new Color(255, 182, 193), // Light Pink
+            new Color(230, 230, 250)  // Lavender
+    };
+
+    private Image screenImage;
+    private Image background = new ImageIcon(Main.class.getResource("/images/Board/board.png")).getImage();
+    private Image rollingDice = new ImageIcon(Main.class.getResource("/images/rollingDice_3.gif")).getImage();
+    private ImageIcon[] imagePlayer;
+
+    private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("/images/menuBar.png")));
+
 
 	private Image screenImage;
 	private Image background = new ImageIcon(Main.class.getResource("/images/Board/board.png")).getImage();
@@ -61,6 +69,7 @@ public class GameGUI extends JPanel {
 
 
 	JLabel nowPlayerLabel;
+  private MiniGame miniGame; // 여기 추가
 
 	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo) {
 		this.clientThread = clientThread;
@@ -565,7 +574,74 @@ public class GameGUI extends JPanel {
 		}
 	}
 
+  public void miniGameStart(int idx, int gameType) {
+    Player player = playerList.get(idx);
+    System.out.println("is player : " + (idx == playerIdx));
 
+    // 서버에 미니게임 시작 상태 전송
+    clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/START");
+
+    System.out.println("is player : " + (idx == playerIdx));
+//    MiniGame miniGame = null; // MiniGame 타입 변수
+
+    if (gameType == 4) {
+        miniGame = new Map4_GBBGame(player, idx == playerIdx, parent);
+    } else if (gameType == 8) {
+        miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent);
+    } else if (gameType == 12) {
+        miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent);
+    }
+
+    // 미니게임 종료 후 로직 실행
+//    if (miniGame != null) {
+//        miniGame.onMiniGameEnd();
+//        clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/END");
+//    }
+    if (miniGame != null) {
+        // 새로운 쓰레드로 미니게임 종료를 기다림
+        new Thread(() -> {
+            while (!miniGame.isGameEnded()) {
+                try {
+                    Thread.sleep(100); // 종료 상태를 반복적으로 확인
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            miniGame.onMiniGameEnd();
+            clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/END");
+        }).start();
+    }
+}
+ public void endMiniGame(int idx, int gameType) {
+        Player player = playerList.get(idx);
+        String gameName = "";
+
+        // 게임 유형에 따라 이름 설정 (예: 4: 가위바위보, 8: 도박 게임, 12: 총알 게임)
+        switch (gameType) {
+            case 4:
+                gameName = "가위바위보";
+                break;
+            case 8:
+                gameName = "도박 게임";
+                break;
+            case 12:
+                gameName = "총알 게임";
+                break;
+            default:
+                gameName = "알 수 없는 게임";
+        }
+
+        // 미니게임 종료 메시지 출력
+        System.out.println("Player " + player.getName() + " has finished the mini-game: " + gameName);
+        JOptionPane.showMessageDialog(this, "Player " + player.getName() + "의 " + gameName + " 미니게임이 종료되었습니다!");
+
+        // 필요한 경우, UI 상태 업데이트
+        rollDiceButton.setEnabled(true); // 주사위 버튼 활성화
+        repaint(); // 화면 갱신
+    }
+
+  
+  
 	public void offRollingDice() {
 		rollDice = false;
 	}
@@ -596,4 +672,15 @@ public class GameGUI extends JPanel {
 		paintComponents(g);
 		repaint();
 	}
+
+    
+
+ 
+
+          
+
+
+
+   
+
 }
