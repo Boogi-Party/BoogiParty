@@ -1,5 +1,5 @@
 package Game;
-
+//src/Game/Game.java
 import client.Main;
 import client.PlayMusic;
 import server.RoomThread;
@@ -56,7 +56,7 @@ public class Game extends Thread {
 				int max_roundMan = -1;
 				dice = -1;
 //				while (dice == -1) {
-//					//gameGUI.updateCoinLabel(); // Coin 업데이트
+//					gameGUI.updateCoinLabel(); // Coin 업데이트
 //					if (nowPlayer.get_use_item() == 1) {
 //						Item_plus_move(playerList.get(playerIdx));
 //						nowPlayer.set_use_item(0);

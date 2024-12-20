@@ -1,4 +1,5 @@
 package client;
+//src/client/WaitingRoom.java
 
 import Game.GameGUI;
 

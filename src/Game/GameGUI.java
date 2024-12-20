@@ -1,4 +1,5 @@
 package Game;
+//src/Game/GameGUI.java
 
 import client.ClientThread;
 import client.Main;
@@ -96,10 +97,12 @@ public class GameGUI extends JPanel {
 
 			updateID_Label(i);
 
+
 			JLabel playerCoinLabel = new JLabel();
 			playerCoinLabel.setBounds(100, 50, 80, 20);
 			playerCoinLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
 			playerCoin.add(playerCoinLabel);
+			updateCoinLabel(i);
 
 			playerPanel.add(playerImg);
 			playerPanel.add(playerIdLabel);

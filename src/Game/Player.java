@@ -1,5 +1,5 @@
 package Game;
-
+//src/Game/Player.java
 public class Player {
 	int ID;
 	int coin;
