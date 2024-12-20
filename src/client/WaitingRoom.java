@@ -79,7 +79,7 @@ public class WaitingRoom extends JPanel {
 
         // 텍스트 입력 필드
         chatInputField = new JTextField();
-        chatInputField.setFont(new Font("Arial", Font.PLAIN, 16));
+        chatInputField.setFont(new Font("Nanum Gothic", Font.PLAIN, 16));
         chatInputField.setPreferredSize(new Dimension(0, 30)); // 높이 조정
         inputPanel.add(chatInputField, BorderLayout.CENTER);
 

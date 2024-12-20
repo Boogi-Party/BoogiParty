@@ -116,6 +116,11 @@ public class ClientThread extends Thread {
                 else if ("MINI_GAME".equals(command)) {
                     gameGUI.miniGameStart(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 }
+
+                else if ("IN_GAME_MSG".equals(command)) {
+                    gameGUI.renderChatMessage(Integer.parseInt(parts[1]), parts[2]);
+                }
+
                 else if ("MINI_GAME_STATE".equals(command)) {
                     int playerIdx = Integer.parseInt(parts[1]); // 미니게임을 수행하는 플레이어
                     int gameType = Integer.parseInt(parts[2]); // 미니게임 유형
@@ -127,6 +132,7 @@ public class ClientThread extends Thread {
                         gameGUI.endMiniGame(playerIdx, gameType); // 미니게임 종료 처리
                     }
                 }
+
 
 
 

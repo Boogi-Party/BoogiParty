@@ -56,7 +56,6 @@ public class Map4_GBBGame extends JFrame implements MiniGame{ //ctrl shift o ///
 		super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌
 		this.isPlayer =	isPlayer;
 		this.player = player;
-		System.out.println("Map4  Called, isPlayer  : " +  isPlayer);
 
 		menuPanel = new MenuPanel();
 		gamePanel = new GamePanel();
@@ -162,6 +161,7 @@ public class Map4_GBBGame extends JFrame implements MiniGame{ //ctrl shift o ///
 		
 		public void draw(Icon myImage,Icon comImage,String m) { //두 이미지를 출력 //Icon 받아야하니가 import
 			me.setIcon(myImage);
+
 			com.setIcon(comImage);
 			win.setText(m);
 		}

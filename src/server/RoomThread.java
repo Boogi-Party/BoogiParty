@@ -15,7 +15,7 @@ public class RoomThread extends Thread {
     private final Map<String, Boolean> readyStates = new HashMap<>();
 
     private Game game;
-    private boolean isGameRunning = false;
+    private volatile boolean isMiniGameRunning = false;
     //private GameSession gameSession; // 게임 로직을 관리하는 객체
 
     private final OnEmptyRoomCallback callback;
@@ -74,6 +74,9 @@ public class RoomThread extends Thread {
         }
     }
 
+    private void setMiniGameRunning(boolean state) {
+        isMiniGameRunning = state;
+    }
 
     private void broadcastUserList() {
         synchronized (clients) {
@@ -141,6 +144,16 @@ public class RoomThread extends Thread {
         }
     }
 
+
+    private void broadcastInGameMessage(String playerNum, String msg) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("IN_GAME_MSG/" + playerNum + "/" + msg);
+            }
+        }
+    }
+
+
     private void broadcastMiniGameState(int playerIdx, int gameType, String state) {
         synchronized (clients) {
             String message = "MINI_GAME_STATE/" + playerIdx + "/" + gameType + "/" + state;
@@ -149,6 +162,7 @@ public class RoomThread extends Thread {
             }
         }
     }
+
 
 
     private void closeRoom() {
@@ -204,10 +218,11 @@ public class RoomThread extends Thread {
                             String user = parts[1];
                             String state = parts[2];
                             broadcastReadyState(user, state);
-//                        }
+
                     } else if (command.equals("ROLL_DICE")) {
                         // parts[1]: 플레이어 번호, parts[2]: 주사위 값
                         //System.out.println("now player : " + game.getPlayerIdx());
+
                         if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
                             int dice = game.rollDice();
 
@@ -218,6 +233,11 @@ public class RoomThread extends Thread {
                         // parts[1]: 플레이어 번호, parts[2]: 상태 (START)
                         broadcastMiniGame(parts[1], parts[2]); // 미니게임 상태를 다른 클라이언트로 브로드캐스트
                     }
+
+                    else if (command.equals("IN_GAME_MSG")) {
+                        broadcastInGameMessage(parts[1], parts[2]);
+                    }
+
                     else if (command.equals("MINI_GAME_STATE")) {
                         int playerIdx = Integer.parseInt(parts[1]);
                         int gameType = Integer.parseInt(parts[2]);
