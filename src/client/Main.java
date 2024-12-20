@@ -1,34 +1,26 @@
 package client;
-
+//src/client/Main.java
 import Game.Game;
 import Game.GameGUI;
 
 import javax.swing.*;
-import javax.tools.Tool;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class Main extends JFrame {
+	public static final int SCREEN_WIDTH = 1500;
+	public static final int SCREEN_HEIGHT = 720;
+
 	client.Menu frameMenu;
 	Game game;
 	JPanel screen;
 
 	private String background_music = "src/audio/music.wav";
 
-	int width, height;
-
-	public void setSize() {
-		setSize(800, 600);
-	}
-
 	Main() {
 		setTitle("marble");
 		//setUndecorated(true);
-		this.width=800;
-		this.height=600;
-		setSize(width, height);
+		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -37,24 +29,10 @@ public class Main extends JFrame {
 
 		PlayMusic.load_backgroundAudio(background_music);
 
-		this.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-
-				screen.setSize(width, height);
-
-				// 패널 다시 그리기
-				screen.revalidate();
-				screen.repaint();
-			}
-		});
-
 		setPanel(new Menu(this));
 
 		setVisible(true);
 	}
-
-
 
 	public void setPanel(JPanel jPanel) {
 		getContentPane().removeAll(); // 기존 패널 제거
@@ -66,10 +44,22 @@ public class Main extends JFrame {
 		repaint();
 	}
 
+	public void startGame(int numPlayer) {
+		removeAll();
+		frameMenu.setVisible(false);
+		//game = new Game(this, numPlayer);
+		game.start();
+	}
+
+	public void showMenu() {
+		if (game != null) {
+			game.close();
+		}
+		frameMenu.setVisible(true);
+	}
 	public void setScreenGameSize() {
 		setLayout(null);
-		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		setSize(dimension.width / 2, dimension.height / 2);
+		setSize(1500, 720);
 	}
 
 	public void setScreenNotGameSize() {

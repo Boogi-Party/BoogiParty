@@ -144,7 +144,6 @@ public class RoomThread extends Thread {
     }
 
     private void broadcastInGameMessage(String playerNum, String msg) {
-        System.out.println("broadcasting ingamemsg");
         synchronized (clients) {
             for (UserThread user : clients) {
                 user.sendMessage("IN_GAME_MSG/" + playerNum + "/" + msg);
@@ -220,7 +219,6 @@ public class RoomThread extends Thread {
                         broadcastMiniGame(parts[1], parts[2]);
                     }
                     else if (command.equals("IN_GAME_MSG")) {
-                        System.out.println("userthread got ingamemsg");
                         broadcastInGameMessage(parts[1], parts[2]);
                     }
                     else {

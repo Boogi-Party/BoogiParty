@@ -45,6 +45,7 @@ public class GameGUI extends JPanel {
 	ArrayList<Player> playerList = new ArrayList<>();
 	private int mouseX, mouseY;
 	ClientThread clientThread;
+	private Timer currentTimer;
 
 	int numPlayer;
 	private int playerIdx;
@@ -67,7 +68,7 @@ public class GameGUI extends JPanel {
 		this.pointManager = new PointManager();
 
 		parent.setScreenGameSize();
-
+		setSize(1500, 720);
 		setBackground(Color.PINK);
 
 		setLayout(null);
@@ -113,7 +114,7 @@ public class GameGUI extends JPanel {
 			playerPanel.add(playerCoinLabel);
 
 			playerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-			playerPanel.setBounds(1280, 100 * i, 220, 100);
+			playerPanel.setBounds(1200, 100 * i, 300, 100);
 			playerPanel.setBackground(playerColors[i]);
 			playerPanel.setLayout(null);
 
@@ -133,7 +134,7 @@ public class GameGUI extends JPanel {
 
 		extraPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 
-		extraPanel.setBounds(1280, 400, 220, 320);
+		extraPanel.setBounds(1200, 400, 300, 320);
 		extraPanel.setBackground(new Color(255, 255, 255));
 		extraPanel.setLayout(null);
 
@@ -310,9 +311,9 @@ public class GameGUI extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String message = chatInput.getText().trim();
-				System.out.println("sendmessage" + message);
 
-				if (message.length() > 100) {
+				if (message.length() == 0 || message.length() > 10) {
+					chatInput.setText("");
 					return; // 메시지 전송 중단
 				}
 				clientThread.sendMessage("IN_GAME_MSG/" + playerIdx + "/" + message);
@@ -324,26 +325,40 @@ public class GameGUI extends JPanel {
 
 	// 채팅 메시지 전송 메서드
 	public void renderChatMessage(int idx, String msg) {
-		System.out.println("renderchanemssage");
 		showBubble(playerBubbles.get(idx), msg, playerPanels.get(idx).getLocation());
 
 	}
 
 	// 말풍선 표시 메서드
 	private void showBubble(SpeechBubble bubble, String message, Point p) {
-		// HTML로 텍스트 줄바꿈 처리 (가로 최대 20자 제한)
+		// 텍스트 줄바꿈 적용
 		String formattedMessage = formatMessageWithLineBreaks(message, 20);
-
 		bubble.setText(formattedMessage);
-		bubble.setBounds(p.x - 200, p.y, 200, 50); // 고정된 말풍선 크기
 
+		// 위치와 크기 설정
+		bubble.setBounds(p.x - 200, p.y, 200, 50);
+
+		// 말풍선 표시
 		bubble.setVisible(true);
 
-		// 일정 시간 뒤 말풍선 숨기기
-		Timer timer = new Timer(3000, e -> bubble.setVisible(false));
-		timer.setRepeats(false);
-		timer.start();
+		// Z-Order 갱신 및 다시 그리기
+		setComponentZOrder(bubble, 0);
+		bubble.repaint();
+		revalidate();
+
+		// 기존 타이머가 존재하면 종료
+		if (currentTimer != null && currentTimer.isRunning()) {
+			currentTimer.stop();
+		}
+
+		// 새로운 타이머 시작
+		currentTimer = new Timer(3000, e -> {
+			bubble.setVisible(false);
+		});
+		currentTimer.setRepeats(false);
+		currentTimer.start();
 	}
+
 
 	// 텍스트 줄바꿈 메서드
 	private String formatMessageWithLineBreaks(String message, int maxLineLength) {
@@ -467,7 +482,6 @@ public class GameGUI extends JPanel {
 
 	public void overlap_move(Player player) { // 만약 같은 위치에 있는 경우 기존 플레이어 시작으로 보냄
 		int ID = player.getID();
-		System.out.println("reset player : " + ID);
 		Point catchMove = pointManager.getPlayerPoint(ID, player.getPosition());
 
 		for (int i = 0; i < 10; i++) {
@@ -537,17 +551,16 @@ public class GameGUI extends JPanel {
 		overlap_move(playerList.get(maxPlayerIdx));
 	}
 
-		public void miniGameStart(int idx, int gameType) {
-			Player player = playerList.get(idx);
-			System.out.println("is player : " + (idx == playerIdx));
-			if (gameType == 4) {
-				new Map4_GBBGame(player, idx == playerIdx, parent);
-			} else if (gameType == 8) {
-				new Map8_GamblingWIthThread(player, idx == playerIdx, parent);
-			} else if (gameType == 12) {
-				new Map12_BulletGameFrame(player, idx == playerIdx, parent);
-			}
+	public void miniGameStart(int idx, int gameType) {
+		Player player = playerList.get(idx);
+		if (gameType == 4) {
+			new Map4_GBBGame(player, idx == playerIdx, parent);
+		} else if (gameType == 8) {
+			new Map8_GamblingWIthThread(player, idx == playerIdx, parent);
+		} else if (gameType == 12) {
+			new Map12_BulletGameFrame(player, idx == playerIdx, parent);
 		}
+	}
 
 
 	public void offRollingDice() {
@@ -568,7 +581,7 @@ public class GameGUI extends JPanel {
 	public void paintComponent(Graphics g) {
 		//paintComponent(g); // 기존 컴포넌트 그리기
 		//screenImage = createImage(client.Main.SCREEN_WIDTH, client.Main.SCREEN_HEIGHT);
-		screenImage = createImage(parent.getWidth()  * 5 / 3, parent.getHeight());
+		screenImage = createImage(1200, 720);
 		screenDraw((Graphics2D) screenImage.getGraphics());
 		g.drawImage(screenImage, 0, 0, null);
 	}

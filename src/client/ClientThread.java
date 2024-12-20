@@ -116,7 +116,6 @@ public class ClientThread extends Thread {
                     gameGUI.miniGameStart(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 }
                 else if ("IN_GAME_MSG".equals(command)) {
-                    System.out.println("clinetthread got ingamemsg");
                     gameGUI.renderChatMessage(Integer.parseInt(parts[1]), parts[2]);
                 }
                 else {
