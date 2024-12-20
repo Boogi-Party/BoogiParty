@@ -14,7 +14,7 @@ public class RoomThread extends Thread {
     private final Map<String, Boolean> readyStates = new HashMap<>();
 
     private Game game;
-    private boolean isGameRunning = false;
+    private volatile boolean isMiniGameRunning = false;
     //private GameSession gameSession; // 게임 로직을 관리하는 객체
 
     private final OnEmptyRoomCallback callback;
@@ -73,6 +73,9 @@ public class RoomThread extends Thread {
         }
     }
 
+    private void setMiniGameRunning(boolean state) {
+        isMiniGameRunning = state;
+    }
 
     private void broadcastUserList() {
         synchronized (clients) {
@@ -140,6 +143,14 @@ public class RoomThread extends Thread {
         }
     }
 
+    private void broadcastInGameMessage(String playerNum, String msg) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("IN_GAME_MSG/" + playerNum + "/" + msg);
+            }
+        }
+    }
+
     private void closeRoom() {
         isRoomActive = false;
         synchronized (clients) {
@@ -198,7 +209,6 @@ public class RoomThread extends Thread {
                         }
                     }
                     else if (command.equals("ROLL_DICE")) {
-                        //System.out.println("now player : " + game.getPlayerIdx());
                         if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
                             int dice = game.rollDice();
 
@@ -207,6 +217,9 @@ public class RoomThread extends Thread {
                     }
                     else if (command.equals("MINI_GAME")) {
                         broadcastMiniGame(parts[1], parts[2]);
+                    }
+                    else if (command.equals("IN_GAME_MSG")) {
+                        broadcastInGameMessage(parts[1], parts[2]);
                     }
                     else {
                         broadcastMessage(userName + " : " +message); // 메시지 브로드캐스트

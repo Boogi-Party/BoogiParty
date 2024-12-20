@@ -115,7 +115,9 @@ public class ClientThread extends Thread {
                 else if ("MINI_GAME".equals(command)) {
                     gameGUI.miniGameStart(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                 }
-
+                else if ("IN_GAME_MSG".equals(command)) {
+                    gameGUI.renderChatMessage(Integer.parseInt(parts[1]), parts[2]);
+                }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력
                 }
