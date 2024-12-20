@@ -29,7 +29,6 @@ public class GameGUI extends JPanel {
 	private Image rollingDice = new ImageIcon(Main.class.getResource("/images/rollingDice_3.gif")).getImage();
 	private ImageIcon[] imagePlayer;
 
-	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("/images/menuBar.png")));
 
 	public JLabel[] playerLabel;
 	private JLabel[] diceNumber;
@@ -38,6 +37,8 @@ public class GameGUI extends JPanel {
 
 	ArrayList<JLabel> playerId = new ArrayList<>();
 	ArrayList<JLabel> playerCoin = new ArrayList<>();
+	ArrayList<JPanel> playerPanels = new ArrayList<>();
+	ArrayList<SpeechBubble> playerBubbles = new ArrayList<>();
 
 	JButton rollDiceButton;
 
@@ -54,6 +55,11 @@ public class GameGUI extends JPanel {
 	Main parent;
 	PointManager pointManager;
 
+	private JTextField chatInput;
+
+
+	JLabel nowPlayerLabel;
+
 	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo) {
 		this.clientThread = clientThread;
 		this.parent = parent;
@@ -61,7 +67,7 @@ public class GameGUI extends JPanel {
 		this.pointManager = new PointManager();
 
 		parent.setScreenGameSize();
-		setSize(1500, 720);
+
 		setBackground(Color.PINK);
 
 		setLayout(null);
@@ -99,6 +105,7 @@ public class GameGUI extends JPanel {
 			JLabel playerCoinLabel = new JLabel();
 			playerCoinLabel.setBounds(100, 50, 80, 20);
 			playerCoinLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
+			playerCoinLabel.setText("0");
 			playerCoin.add(playerCoinLabel);
 
 			playerPanel.add(playerImg);
@@ -110,8 +117,18 @@ public class GameGUI extends JPanel {
 			playerPanel.setBackground(playerColors[i]);
 			playerPanel.setLayout(null);
 
+			playerPanels.add(playerPanel);
 			add(playerPanel);
 			playerPanel.setVisible(true);
+
+			SpeechBubble playerBubble = new SpeechBubble("");
+			playerBubble.setSize(200, 50); // 기본 크기
+			playerBubble.setVisible(false);
+
+			playerBubbles.add(playerBubble);
+			add(playerBubble); // 기존 컴포넌트 위에 추가
+			setComponentZOrder(playerBubble, 0); // 말풍선이 다른 컴포넌트들 위로 오도록 설정
+
 		}
 
 		extraPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -227,12 +244,6 @@ public class GameGUI extends JPanel {
 		revalidate();
 		repaint();
 
-		//pointManager = game.pointManager;
-		//playerList = game.playerList;
-		//setLayout(null);
-		//setBounds(0, 0, client.Main.SCREEN_WIDTH, client.Main.SCREEN_HEIGHT);
-		//setBounds(0, 0, 1280, 720);
-
 		imagePlayer = new ImageIcon[4];
 		for (int i = 0; i < 4; i++) {
 			imagePlayer[i] = new ImageIcon(Main.class.getResource("/images/Board/player" + i + ".png"));
@@ -246,8 +257,15 @@ public class GameGUI extends JPanel {
 			add(diceNumber[i]);
 		}
 
-		/********* SHOW PLAYER ICONS *********/
 		playerLabel = new JLabel[4];
+		nowPlayerLabel = new JLabel(imagePlayer[0]);
+		nowPlayerLabel.setLocation(0, 10);
+		nowPlayerLabel.setSize(50, 50);
+		nowPlayerLabel.setVisible(false);
+		add(nowPlayerLabel);
+		nowPlayerLabel.setVisible(true);
+
+		/********* SHOW PLAYER ICONS *********/
 		for (int i = 0; i < 4; i++) {
 			Point point = pointManager.getPlayerPoint(i, 0);
 			playerLabel[i] = new JLabel(imagePlayer[i]);
@@ -275,41 +293,74 @@ public class GameGUI extends JPanel {
 			}
 		});
 		add(rollDiceButton);
+		// 채팅창 패널 생성
+		JPanel chatPanel = new JPanel();
+		chatPanel.setLayout(new BorderLayout());
+		chatPanel.setBounds(1020, 400, 250, 200); // 위치와 크기 설정
+		chatPanel.setBorder(new LineBorder(Color.BLACK));
 
-		menuBar.setBounds(0, 0, 1280, 30);
-		menuBar.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				mouseX = e.getX();
-				mouseY = e.getY();
-			}
-		});
 
-		add(menuBar);
-		setComponentZOrder(menuBar, 1);
+// 채팅 입력 필드 추가 (화면 하단 중앙)
+		chatInput = new JTextField();
+		chatInput.setBounds(490, 640, 300, 30);  // 위치 및 크기 설정
+		add(chatInput);
 
-		JButton closeButton = new JButton();
-		closeButton.setBounds(1245, 0, 30, 30);
-		closeButton.setBorderPainted(false);
-		closeButton.setContentAreaFilled(false);
-		closeButton.setFocusPainted(false);
-		closeButton.setIcon(new ImageIcon(Main.class.getResource("/images/MainMenu/closeButton.png")));
-		closeButton.setRolloverIcon(new ImageIcon(Main.class.getResource("/images/MainMenu/closeButtonEntered.png")));
-		closeButton.setPressedIcon(new ImageIcon(Main.class.getResource("/images/MainMenu/closeButtonPressed.png")));
-		add(closeButton);
-		setComponentZOrder(closeButton, 0);
-
-		closeButton.addActionListener(new ActionListener() {
+// 채팅 입력 필드 이벤트 리스너
+		chatInput.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException ex) {
-					ex.printStackTrace();
+				String message = chatInput.getText().trim();
+				System.out.println("sendmessage" + message);
+
+				if (message.length() > 100) {
+					return; // 메시지 전송 중단
 				}
-				System.exit(0);
+				clientThread.sendMessage("IN_GAME_MSG/" + playerIdx + "/" + message);
+				chatInput.setText(""); // 입력 필드 초기화
 			}
 		});
+
+	}
+
+	// 채팅 메시지 전송 메서드
+	public void renderChatMessage(int idx, String msg) {
+		System.out.println("renderchanemssage");
+		showBubble(playerBubbles.get(idx), msg, playerPanels.get(idx).getLocation());
+
+	}
+
+	// 말풍선 표시 메서드
+	private void showBubble(SpeechBubble bubble, String message, Point p) {
+		// HTML로 텍스트 줄바꿈 처리 (가로 최대 20자 제한)
+		String formattedMessage = formatMessageWithLineBreaks(message, 20);
+
+		bubble.setText(formattedMessage);
+		bubble.setBounds(p.x - 200, p.y, 200, 50); // 고정된 말풍선 크기
+
+		bubble.setVisible(true);
+
+		// 일정 시간 뒤 말풍선 숨기기
+		Timer timer = new Timer(3000, e -> bubble.setVisible(false));
+		timer.setRepeats(false);
+		timer.start();
+	}
+
+	// 텍스트 줄바꿈 메서드
+	private String formatMessageWithLineBreaks(String message, int maxLineLength) {
+		StringBuilder formatted = new StringBuilder();
+		int lineLength = 0;
+
+		for (char c : message.toCharArray()) {
+			formatted.append(c);
+			lineLength++;
+
+			if (lineLength >= maxLineLength) {
+
+				lineLength = 0;
+			}
+		}
+
+		return formatted.toString();
 	}
 
 	public void updateCoinLabel(int i) {
@@ -322,21 +373,17 @@ public class GameGUI extends JPanel {
 
 	//주사위 굴러가는스레드
 	public void rollDiceMotion(int idx, int dice) {
-
 		new Thread(new Runnable() {
 			public void run() {
 				rollDice = true;
 				rollDiceButton.setVisible(false);
 				PlayMusic.play_actionSound("src/audio/Roll-Dice-Sound.wav");
-				//client.Main.class.getResource("audio/Roll-Dice-Sound.wav"))
-				//game.playSound(client.Main.class.getResource("audio/Roll-Dice-Sound.wav").toString(),false);
+
 				try {
 					Thread.sleep(600);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				//client.PlayMusic.loadAudio(Roll_music);
-				//game.playSound("src/audio/Roll-Dice-Sound.wav",false);
 
 				offRollingDice();
 				onDiceNumber(dice);
@@ -351,6 +398,13 @@ public class GameGUI extends JPanel {
 				}
 				sameGround(idx);
 
+				// 쓰레드가 끝난 후 실행할 UI 코드
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
+					}
+				});
 			}
 		}).start();
 	}
@@ -514,7 +568,7 @@ public class GameGUI extends JPanel {
 	public void paintComponent(Graphics g) {
 		//paintComponent(g); // 기존 컴포넌트 그리기
 		//screenImage = createImage(client.Main.SCREEN_WIDTH, client.Main.SCREEN_HEIGHT);
-		screenImage = createImage(1280, 720);
+		screenImage = createImage(parent.getWidth()  * 5 / 3, parent.getHeight());
 		screenDraw((Graphics2D) screenImage.getGraphics());
 		g.drawImage(screenImage, 0, 0, null);
 	}
