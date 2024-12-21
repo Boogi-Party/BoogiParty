@@ -163,6 +163,15 @@ public class RoomThread extends Thread {
         }
     }
 
+    public void broadcastGambling(int x1, int x2, int x3, String s) {
+        String message = "GAMBLING/" + x1 + "/" + x2 + "/" + x3;
+        if (!s.isEmpty()) {
+            message += "/" + s;
+        }
+        for (UserThread client : clients) {
+            client.sendMessage(message);
+        }
+    }
 
 
     private void closeRoom() {
@@ -238,15 +247,27 @@ public class RoomThread extends Thread {
                         broadcastInGameMessage(parts[1], parts[2]);
                     }
 
-                    else if (command.equals("MINI_GAME_STATE")) {
-                        int playerIdx = Integer.parseInt(parts[1]);
-                        int gameType = Integer.parseInt(parts[2]);
-                        String state = parts[3];
+//                    else if (command.equals("MINI_GAME_STATE")) {
+//                        int playerIdx = Integer.parseInt(parts[1]);
+//                        int gameType = Integer.parseInt(parts[2]);
+//                        String state = parts[3];
+//
+//                        broadcastMiniGameState(playerIdx, gameType, state);
+//                    }
+                    else if (command.equals("MINI_GAME_START")) {
+                        if (parts[1].equals("8")) {
+                            game.game8();
+                            while (true) {
+                                String s = dis.readUTF();
+                                String [] temp = s.split("/");
+                                if (temp[0].equals("MINI_GAME_END")) {
+                                    game.game8end();
+                                    break;
+                                }
 
-                        broadcastMiniGameState(playerIdx, gameType, state);
+                            }
+                        }
                     }
-
-
 
                     else {
                         broadcastMessage(userName + " : " + message); // 메시지 브로드캐스트

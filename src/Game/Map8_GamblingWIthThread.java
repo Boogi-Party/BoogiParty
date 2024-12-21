@@ -1,6 +1,7 @@
 package Game;
 //src/Game/Map8_Gamblinc.java
 
+import client.ClientThread;
 import client.PlayMusic;
 
 import java.awt.*;
@@ -22,17 +23,72 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 		return gameEnded; // 현재 게임 종료 상태 반환
 	}
 
+	@Override
+	public void update(String msg) {
+		String [] parts = msg.split("/");
+
+		gamePanel.setPanel(parts[0], parts[1], parts[2]);
+	}
+
+	@Override
+	public void end() {
+		// 게임 판정
+		String message;
+		if (gamePanel.getResult()) {
+			PlayMusic.play_actionSound("src/audio/GamblingSuccess.wav");
+			player.setCoin(player.getCoin() + 500);
+			message = player.getName() + " : 잭팟입니다! +500코인 획득!";
+		} else {
+			PlayMusic.play_actionSound("src/audio/GamblingFail.wav");
+			player.setCoin(player.getCoin() - 100);
+			message = player.getName() + " : 꽝! -100코인";
+		}
+
+		// 사용자 확인 버튼 없이 메시지만 보여주는 비모달 JDialog 생성
+		JDialog dialog = new JDialog(Map8_GamblingWIthThread.this, "게임 결과", false); // 비모달 설정 (false)
+		dialog.setLayout(new BorderLayout());
+		JLabel label = new JLabel(message, SwingConstants.CENTER);
+		label.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
+		dialog.add(label, BorderLayout.CENTER);
+		dialog.setSize(300, 150);
+		dialog.setLocationRelativeTo(Map8_GamblingWIthThread.this);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 기본 닫기 설정
+		dialog.setVisible(true);
+
+		// 일정 시간 후에 다이얼로그와 프레임 종료
+		Timer timer = new Timer(2000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog.dispose(); // 다이얼로그 닫기
+				gameEnded = true; // 게임 종료 플래그 설정
+				onMiniGameEnd(); // 미니게임 종료 콜백 호출
+				dispose(); // JFrame 종료
+			}
+		});
+		timer.setRepeats(false); // 타이머 반복 방지
+		timer.start();
+	}
+
+
+
+
+
 	private Player player;  // 멤버 변수로 선언
 	private boolean isPlayer;
 	public Clip clip;
-	public Map8_GamblingWIthThread(Player player, boolean isPlayer, JFrame parentFrame) { //생성자.
+	ClientThread clientThread;
+	public GamePanel gamePanel;
+
+	public Map8_GamblingWIthThread(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread) { //생성자.
 		super("미니게임- 도전 겜블링");
 		this.player = player;
 		this.isPlayer = isPlayer;
+		this.clientThread = clientThread;
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		
-		setContentPane(new GamePanel()); //패널 부착
+
+		gamePanel = new GamePanel();
+		setContentPane(gamePanel); //패널 부착
 		setSize(320,200);
 		if (parentFrame != null) {
 			int parentX = parentFrame.getX();
@@ -55,8 +111,16 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 		private JLabel [] label  = new JLabel[3];  //label이라는 배열 레퍼런스 변수 선언하고 배열생성해서 연결. 배열을 3개만듬
 		private JLabel result = new JLabel("마우스 클릭해서 게임을 시작...");
 		//3개의 라벨과 result를 부착하자. 배치관리자 없앴으니까.	
-		private GamblingThread th=new GamblingThread(label,result); //세번째 속성으로 th객체 만듦.
-		
+
+		public void setPanel(String x1, String x2, String x3) {
+			label[0].setText(x1);
+			label[1].setText(x2);
+			label[2].setText(x3);
+		}
+
+		public boolean getResult() {
+			return gamePanel.label[0].getText().equals(label[1].getText()) && label[1].getText().equals(label[2].getText());
+		}
 		 //생성자
 		public GamePanel() {
 			setLayout(null); //원래 구현된 기본배치관리자 사용하지 않는다.
@@ -76,102 +140,33 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 			result.setSize(200,30);
 			result.setLocation(30,120);
 			add(result); //화면에다가 부착
-			
-			th.start(); //thread 가동. 자동으로 run메소드를 부른다.
+
 
 			if (isPlayer) {
-				addMouseListener(new MouseAdapter() {//이벤트객체를 만들어서 여기에 넣어라.
-					//리스너에 경우는 추상메소드가 있어서 구현을 해야함. 근데 Adapter의 경우는 클래스이기 때문에 기본적인 코드가 있어서
-					//우리가 쓰고자하는거 하나만 오버라이딩하면됨.
-					public void mousePressed(MouseEvent e) { //
-						if (th.isReady())
-							th.startGambling(); //마우스에 의해 isReady에 의해 false가 true가 되고 startGambling으로 스레드꺠운다.
+				// 게임 시작 여부를 추적하는 플래그
+				final boolean[] gameStarted = {false}; // 초기값: 게임이 시작되지 않음
+
+				addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent e) {
+						System.out.println("gamble start");
+						if (!gameStarted[0]) {
+							// 첫 번째 클릭: 게임 시작 메시지 전송
+							System.out.println("GAMBLE START MSG");
+							clientThread.sendMessage("MINI_GAME_START/" + 8);
+							gameStarted[0] = true; // 게임이 시작되었음을 플래그로 설정
+						} else {
+							// 두 번째 클릭 이후: 게임 종료 메시지 전송
+							System.out.println("GAMBLE END MSG");
+							clientThread.sendMessage("MINI_GAME_END/" + 8);
+						}
 					}
 				});
 			}
 			//addKeyListener 추가하면 //Enter키를 입력받아서 할 수도 있음
 		}
-	}
-	class GamblingThread extends Thread{
-		//속성
-		private JLabel [] label;
-		private JLabel result; 
-		private int delay = 200; //얼만큼 지연할 것인가 //잠깐 wait할 때 delay를 할것이다. // 0.2초간격 200ms
-		private boolean gambling = false;
-		
-		boolean isReady() {
-			return !gambling; //흐름 조작을 하자. 호출될 때마다 한번씩 반대가 되는 것이다.
-			//마우스로 클릭하니까. 
-		}
-		
-		//생성자
-		public GamblingThread(JLabel [] label,JLabel result) {
-			this.label = label;
-			this.result = result;
-		}
-		
-		synchronized public void waitGambling() {    //wait이랑 notify랑 왔다갔다. 싱크로나이즈. 동기화
-			if(!gambling)
-				try {
-					this.wait(); //너 스레드야 wait해라.
-				}catch(InterruptedException e) {return;}
-		
-		}
-		synchronized public void startGambling() { //wait해서 잠자고 있는 거 깨운다.
-			gambling = true;  //깨워주는 건 CPU가 일을 계속하게하는거니까 interrupt 고려안해도 됨.
-			this.notify(); //일어나라.
-		}
-		//run 메소드 오버라이딩. 스래드 객체가 start메소드를 호출하면 의해서 run이 실행되도록 세팅이되어있음.
-		public void run() {//게임의 시작은 여기서부터.
-			
-			//내가 클릭할 때까지 멈춰있어. wait명령.
-			waitGambling(); //너좀 잠깐 멈춰있어라 하는 함수. //이것 떄문에 run실행될 때 아래 무한루프 안돌아감.
-			//가동할 수 있게 깨워주어라. 클릭하는 이벤트가 겜블리을 깨워주면 된다.
-			
-			
-			while(true) {
-				
-				try {//예외처리 상황을 고려해줘야함
-					int x1 =(int)(Math.random()*2);//0~4   //숫자 세개를 난수로 만들어준다.
-					int x2 =(int)(Math.random()*2); 
-					int x3 =(int)(Math.random()*2);
-					
-					label[0].setBackground(Color.yellow);
-					sleep(200); //슬립. 슬립하면 Interrupt발생. catch문 수행하러 이동.
-					label[0].setText(Integer.toString(x1)); //정수클래스에 toString메소드. 정수를 문자로 변형.
-					
-					label[1].setBackground(Color.yellow);
-					sleep(200); //슬립. 슬립하면 Interrupt발생. catch문 수행하러 이동.
-					label[1].setText(Integer.toString(x2)); //정수클래스에 toString메소드. 정수를 문자로 변형.
-					
-					label[2].setBackground(Color.yellow);
-					sleep(200); //슬립. 슬립하면 Interrupt발생. catch문 수행하러 이동.
-					label[2].setText(Integer.toString(x3)); //정수클래스에 toString메소드. 정수를 문자로 변형.
-					
-					//게임 판정
-					if(x1 == x2 && x2==x3) {
-						result.setText("잭팟!!!!!!!!");
-						PlayMusic.play_actionSound("src/audio/GamblingSuccess.wav");
-						player.setCoin(player.getCoin() + 500);
-						
-						JOptionPane.showMessageDialog(null, "Coin +500", "알림", JOptionPane.INFORMATION_MESSAGE);
-						gambling = false;
-						break;}
-					else {
-						result.setText("꽝!");
-						PlayMusic.play_actionSound("src/audio/GamblingFail.wav");
-						player.setCoin(player.getCoin() - 100);
-						JOptionPane.showMessageDialog(null, "Coin -100", "알림", JOptionPane.INFORMATION_MESSAGE);
-						gambling = false;
-					break;}
-					//한 세트 끝났으니 작업멈춘다
-					//gambling = false;
-					
-				}catch(InterruptedException e){return;}     //cpu명령 수행하다가 sleep하면 인터럽트발생. 멈춰서 다른걸 실행
 
-				
 			}
-		}
-	}
+
 
 }

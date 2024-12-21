@@ -68,7 +68,7 @@ public class ClientThread extends Thread {
         while (running) { // 플래그를 확인
             try {
                 String message = dis.readUTF(); // 메시지 수신
-                String[] parts = message.split("/", 4);
+                String[] parts = message.split("/");
 //                System.out.println("Command: " + parts[0] + ", PlayerIdx: " + parts[1] + ", GameType: " + parts[2] + ", State: " + parts[3]);
 
                 String command = parts[0];
@@ -127,17 +127,21 @@ public class ClientThread extends Thread {
                     String state = parts[3]; // 미니게임 상태 (START, END 등)
 
                     if ("START".equals(state)) {
-                        gameGUI.miniGameStart(playerIdx, gameType);
+                       // gameGUI.miniGameStart(playerIdx, gameType);
                     } else if ("END".equals(state)) {
                         gameGUI.endMiniGame(playerIdx, gameType); // 미니게임 종료 처리
                     }
                 }
-
-
-
-
-
-
+                else if ("GAMBLING".equals(command)) {
+                    if (parts.length == 4) {
+                        System.out.println("gamble screen update");
+                        gameGUI.miniGame.update(parts[1] + "/" + parts[2] + "/" + parts[3]);
+                    }
+                    else if (parts.length == 5) {
+                        System.out.println("gambel end msg");
+                        gameGUI.endGame();
+                    }
+                }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력
                 }

@@ -35,6 +35,16 @@ public class Map4_GBBGame extends JFrame implements MiniGame{ //ctrl shift o ///
 		return gameEnded; // 현재 게임 종료 상태 반환
 	}
 
+	@Override
+	public void update(String msg) {
+
+	}
+
+	@Override
+	public void end() {
+
+	}
+
 	//속성
 	private ImageIcon[] gbbImage = {new ImageIcon(Main.class.getResource("/images/gawi.jpg")), //image관리하는 component //이미지 3장이니까 배열. 레퍼런스 변수 선언
 							new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
