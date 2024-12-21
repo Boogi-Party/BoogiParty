@@ -44,19 +44,6 @@ public class Main extends JFrame {
 		repaint();
 	}
 
-	public void startGame(int numPlayer) {
-		removeAll();
-		frameMenu.setVisible(false);
-		//game = new Game(this, numPlayer);
-		game.start();
-	}
-
-	public void showMenu() {
-		if (game != null) {
-			game.close();
-		}
-		frameMenu.setVisible(true);
-	}
 	public void setScreenGameSize() {
 		setLayout(null);
 		setSize(1500, 720);

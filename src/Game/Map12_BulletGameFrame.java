@@ -26,15 +26,6 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 	private boolean gameEnded = false; // 게임 종료 상태를 추적하는 플래그
 
 	@Override
-	public void onMiniGameEnd() {
-		System.out.println("Map12 돼지 사냥 게임 종료");
-	}
-	@Override
-	public boolean isGameEnded() {
-		return gameEnded; // 현재 게임 종료 상태 반환
-	}
-
-	@Override
 	public void update(String msg) {
 
 	}
@@ -137,8 +128,6 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 			bulletLabel.setLocation(getWidth() / 2 - 5, getHeight() - 50);
 			targetLabel.setLocation(0, 0);
 
-			targetThread = new TargetThread(targetLabel);
-			targetThread.start();
 
 			baseLabel.setFocusable(true);
 			baseLabel.requestFocus();
@@ -233,8 +222,8 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 				while (true) {
 					if (hit()) {
 						bullet.setLocation(bullet.getParent().getWidth() / 2 - 5, bullet.getParent().getHeight() - 50);
-						
-						
+
+
 						// player.setCoin(player.getCoin() + 7);
 						hit_cnt++;
 						PlayMusic.play_actionSound("src/audio/Pig.wav");

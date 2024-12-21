@@ -296,7 +296,9 @@ public class GameGUI extends JPanel {
 		rollDiceButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				clientThread.sendMessage("ROLL_DICE/" + playerIdx);
+				if (miniGame == null) {
+					clientThread.sendMessage("ROLL_DICE/" + playerIdx);
+				}
 			}
 		});
 		add(rollDiceButton);
@@ -409,23 +411,29 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
-				for (int i = 0; i < 8; i++) {
+				for (int i = 0; i < dice; i++) {
 					move(idx);
 				}
 				offDiceNumber(dice);
 
+				boolean reachComplete = false;
+
 				if (playerIdx == idx) {
-					reachGround(idx);
+					reachGround(idx); // 작업 수행
+					reachComplete = true; // 완료 플래그 설정
 				}
+
 				sameGround(idx);
 
 				// 쓰레드가 끝난 후 실행할 UI 코드
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
-					}
-				});
+				if (reachComplete) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
+						}
+					});
+				}
 			}
 		}).start();
 	}
@@ -560,13 +568,9 @@ public class GameGUI extends JPanel {
 
   public void miniGameStart(int idx, int gameType) {
     Player player = playerList.get(idx);
-    System.out.println("is player : " + (idx == playerIdx));
-
-    // 서버에 미니게임 시작 상태 전송
-    clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/START");
 
     if (gameType == 4) {
-        miniGame = new Map4_GBBGame(player, idx == playerIdx, parent);
+        miniGame = new Map4_GBBGame(player, idx == playerIdx, parent, clientThread);
     } else if (gameType == 8) {
         miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent, clientThread);
     } else if (gameType == 12) {
@@ -579,6 +583,7 @@ public void endGame() {
 		for(int i=0 ;i<playerList.size(); i++) {
 			updateCoinLabel(i);
 		}
+		miniGame = null;
 }
 
 

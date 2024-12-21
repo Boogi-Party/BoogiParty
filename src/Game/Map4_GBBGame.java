@@ -1,181 +1,193 @@
-//src/Game/Map4_GBBGame.java
-package Game;
-import client.Main;
-import client.PlayMusic;
+	//src/Game/Map4_GBBGame.java
+	package Game;
+	import client.ClientThread;
+	import client.Main;
+	import client.PlayMusic;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+	import java.awt.*;
+	import java.awt.event.ActionEvent;
+	import java.awt.event.ActionListener;
 
-import javax.sound.sampled.Clip;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+	import javax.sound.sampled.Clip;
+	import javax.swing.*;
 
-public class Map4_GBBGame extends JFrame implements MiniGame{ //ctrl shift o ////외부에서는 이 배열 접근하지 못하게 private
-
-//	private boolean isGameEnded = false;
-	private boolean gameEnded = false; // 게임 종료 상태를 추적하는 플래그
-
-	@Override
-	public void onMiniGameEnd() {
-		if (!gameEnded) {
-			gameEnded = true;
-			System.out.println("Map4 가위바위보 게임 종료");
-			dispose(); // 창 닫기
+	public class Map4_GBBGame extends JFrame implements MiniGame{ //ctrl shift o ////외부에서는 이 배열 접근하지 못하게 private
+		@Override
+		public void update(String msg) {
+			String [] parts = msg.split("/");
+			String winner = "";
+			if (parts[0].equals("ME_WIN")) {
+				winner = player.getName();
+			}
+			else if (parts[0].equals("COM_WIN")) {
+				winner = "com";
+			}
+			else {
+				winner = "Draw";
+			}
+			//msg에 ME_WIN/COM_WIN/SAME 넘어오면 GamePanel에 표시.
+			gamePanel.updateResult(winner, Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
 		}
-	}
-	@Override
-	public boolean isGameEnded() {
-		return gameEnded; // 현재 게임 종료 상태 반환
-	}
+		@Override
+		public void end() {
+			// 결과에 따라 플레이어 코인 조정
+			if (gamePanel.getResult().equals("ME_WIN")) {
+				player.setCoin(player.getCoin() + 10);
+			} else if (gamePanel.getResult().equals("COM_WIN")) {
+				player.setCoin(player.getCoin() - 10);
+			}
 
-	@Override
-	public void update(String msg) {
+			// JDialog에 GamePanel 표시
+			JDialog dialog = new JDialog(this, "게임 결과", false); // 비모달 설정
+			dialog.setLayout(new BorderLayout());
+			dialog.add(gamePanel, BorderLayout.CENTER); // GamePanel을 JDialog에 추가
+			dialog.setSize(400, 300); // 다이얼로그 크기 설정
+			dialog.setLocationRelativeTo(this); // 화면 중앙 배치
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
 
-	}
-
-	@Override
-	public void end() {
-
-	}
-
-	//속성
-	private ImageIcon[] gbbImage = {new ImageIcon(Main.class.getResource("/images/gawi.jpg")), //image관리하는 component //이미지 3장이니까 배열. 레퍼런스 변수 선언
-							new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
-							new ImageIcon(Main.class.getResource("/images/bo.jpg")) } ;
-			 //ctrl shift o
-	//ImageIcon playerIcon1 = new ImageIcon(client.Main.class.getResource("images/bo.jpg"));
-	private static String SAME="same!";   //static 하면 객체생성 전부터 관리할 수 있음
-	private static String ME_win= "ME!!!";
-	private static String COM_win="COMPUTER!!!";
-	public Clip clip;
-	
-	private MenuPanel menuPanel;   //객체만들고 new// MenuPanel클래스 객체가 만들어짐.
-	private GamePanel gamePanel;
-	//private Player player;  // 멤버 변수로 선언
-	private boolean isPlayer = false;
-	Player player;
-	//생성자
-	public Map4_GBBGame(Player player, boolean isPlayer, JFrame parentFrame){ //Panel객체 만들었으니까, 배치를 Game.Map4_GBBGame 생성자에서 하자.
-		super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌
-		this.isPlayer =	isPlayer;
-		this.player = player;
-
-		menuPanel = new MenuPanel();
-		gamePanel = new GamePanel();
-
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		Container c = getContentPane();
-		c.setLayout(new BorderLayout());
-		add(menuPanel, BorderLayout.NORTH);
-		add(gamePanel, BorderLayout.CENTER);
-
-		setSize(400, 400);
-
-		// 부모 JFrame의 가운데에 위치시키기
-		if (parentFrame != null) {
-			int parentX = parentFrame.getX();
-			int parentY = parentFrame.getY();
-			int parentWidth = parentFrame.getWidth();
-			int parentHeight = parentFrame.getHeight();
-
-			// 자식 JFrame의 위치 계산
-			int x = parentX + (parentWidth - getWidth()) / 2;
-			int y = parentY + (parentHeight - getHeight()) / 2;
-			setLocation(x, y);
+			// 일정 시간 후 다이얼로그 종료
+			Timer timer = new Timer(2000, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					dialog.dispose(); // 다이얼로그 닫기
+					dispose(); // JFrame 종료
+				}
+			});
+			timer.setRepeats(false); // 반복 방지
+			timer.start();
 		}
 
-		setVisible(true);
-		System.out.println("Map4 가위바위보 게임 시작");
-	}
-	
-	class MenuPanel extends JPanel{ //ctrl shift o
-		//MenuPanel도 클래스이니까 속성+생성자+메소드
-		private JButton[] gbbBtn = new JButton[3];
-		
-		public MenuPanel() {
-			setBackground(Color.gray);
-			for(int i=0; i<3; i++) {
-				gbbBtn[i] = new JButton(gbbImage[i]);
-				add(gbbBtn[i]);
 
-				if (isPlayer) {
-					gbbBtn[i].addActionListener(new MyActionListener()); //객체생성해서 리스너에게 줌. 그걸 버튼에 단다.//기본생성자호출.
+		//속성
+		private ImageIcon[] gbbImage = {new ImageIcon(Main.class.getResource("/images/gawi.jpg")), //image관리하는 component //이미지 3장이니까 배열. 레퍼런스 변수 선언
+								new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
+								new ImageIcon(Main.class.getResource("/images/bo.jpg")) } ;
+				 //ctrl shift o
+		//ImageIcon playerIcon1 = new ImageIcon(client.Main.class.getResource("images/bo.jpg"));
+		private static String SAME="same!";   //static 하면 객체생성 전부터 관리할 수 있음
+		private static String ME_win= "ME!!!";
+		private static String COM_win="COMPUTER!!!";
+		public Clip clip;
+
+		private MenuPanel menuPanel;   //객체만들고 new// MenuPanel클래스 객체가 만들어짐.
+		private GamePanel gamePanel;
+		//private Player player;  // 멤버 변수로 선언
+		private boolean isPlayer = false;
+		Player player;
+		ClientThread clientThread;
+		//생성자
+		public Map4_GBBGame(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread){
+			super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌
+			this.isPlayer =	isPlayer;
+			this.player = player;
+			this.clientThread = clientThread;
+
+			menuPanel = new MenuPanel();
+			gamePanel = new GamePanel();
+
+			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			Container c = getContentPane();
+			c.setLayout(new BorderLayout());
+			add(menuPanel, BorderLayout.NORTH);
+			add(gamePanel, BorderLayout.CENTER);
+
+			setSize(400, 400);
+
+			// 부모 JFrame의 가운데에 위치시키기
+			if (parentFrame != null) {
+				int parentX = parentFrame.getX();
+				int parentY = parentFrame.getY();
+				int parentWidth = parentFrame.getWidth();
+				int parentHeight = parentFrame.getHeight();
+
+				// 자식 JFrame의 위치 계산
+				int x = parentX + (parentWidth - getWidth()) / 2;
+				int y = parentY + (parentHeight - getHeight()) / 2;
+				setLocation(x, y);
+			}
+
+			setVisible(true);
+		}
+
+		class MenuPanel extends JPanel{ //ctrl shift o
+			//MenuPanel도 클래스이니까 속성+생성자+메소드
+			private JButton[] gbbBtn = new JButton[3];
+
+			public MenuPanel() {
+				setBackground(Color.gray);
+				for(int i=0; i<3; i++) {
+					gbbBtn[i] = new JButton(gbbImage[i]);
+					add(gbbBtn[i]);
+
+					if (isPlayer) {
+						gbbBtn[i].addActionListener(new MyActionListener(i));
+					}
 				}
 			}
 		}
-		
-	}	
-	//마우스 이벤트 처리(ActionListener)를 위한 클래스를 구현
-	class MyActionListener implements ActionListener{ //import 
-		 //ActionListener가 가지고있는 추상클래스//이미 만들어져있음.
-		public void actionPerformed(ActionEvent e) { //이미지가 클릭되었을 때 이 함수 호출.
-			System.out.println("Action called");
-			JButton btn = (JButton)e.getSource();//버튼의 정보를 가져오자. 이벤트가 일어난 객체의 정보를 가져온다. 최상위 클래스로부터.
-			//Object로부터 쭉 정보 가져옴.//(JButton)라고 캐스팅해주면 Object로부터 모두가 아니라 JButton에 해당하는 이벤트내용만 가져옴.
-			
-			int comPart = (int)(Math.random()*3);//컴퓨터 숫자 하나 가짐. 난수. 0~1사이 숫자.//*3하고 정수로 캐스팅하면 0~2를 만들 수 있음.
-			//0 <= x < 3     0<= x < 1 
-			String win = "SAMESAME!";
-			
-			//내가 이겼다.
-			if(btn.getIcon()==gbbImage[0]&&comPart == 2 || 
-			   btn.getIcon()==gbbImage[1]&&comPart == 0 ||
-			   btn.getIcon()==gbbImage[2]&&comPart == 1 ) //image 아이콘 값을 읽어오자 //0번 가위  1번 바위 2번 보
-				{ 	
-					win = ME_win;
-					PlayMusic.play_actionSound("src/audio/GBBSuccess.wav");
-					player.setCoin(player.getCoin() + 10);
-					//JOptionPane.showMessageDialog(null, "Coin +10", "알림", JOptionPane.INFORMATION_MESSAGE);
-			
-				}
-			//컴퓨터가 이겼다.
-			else if(btn.getIcon()==gbbImage[0]&&comPart == 1 || 
-					btn.getIcon()==gbbImage[1]&&comPart == 2 ||
-					btn.getIcon()==gbbImage[2]&&comPart == 0 ) //image 아이콘 값을 읽어오자 //0번 가위  1번 바위 2번 보
-					{
-						win = COM_win;
-						PlayMusic.play_actionSound("src/audio/GBBFail.wav");
-						player.setCoin(player.getCoin() - 10);
-						//JOptionPane.showMessageDialog(null, "Coin -10", "알림", JOptionPane.INFORMATION_MESSAGE);
-					}
-			else {
-				win = SAME;
-				PlayMusic.play_actionSound("src/audio/GBBDraw.wav");
-				}
-			 // 모든 버튼 비활성화
-            for (JButton gameButton : menuPanel.gbbBtn) {
-                gameButton.setEnabled(false);
-            }
-			gamePanel.draw(btn.getIcon(),gbbImage[comPart],win);
-		}
-	}
-	
-	class GamePanel extends JPanel{ 
-		//속성+생성자+메소드(draw) //마우스 클릭이 되었을 때 띄운다.
-		private JLabel me = new JLabel("me"); //import
-		private JLabel com = new JLabel("computer");
-		private JLabel win = new JLabel("winner");
-		
-		public GamePanel() {
-			setBackground(Color.YELLOW);
-			add(me);add(com);add(win);
-			win.setForeground(Color.RED); //글자색 foreground
-		}
-		
-		public void draw(Icon myImage,Icon comImage,String m) { //두 이미지를 출력 //Icon 받아야하니가 import
-			me.setIcon(myImage);
 
-			com.setIcon(comImage);
-			win.setText(m);
+		class MyActionListener implements ActionListener{
+			int choice;
+			public MyActionListener(int choice) {
+				this.choice = choice;
+			}
+			public void actionPerformed(ActionEvent e) {
+				clientThread.sendMessage("MINI_GAME_START/4/" + choice);
+				// 모든 버튼 비활성화
+				for (JButton gameButton : menuPanel.gbbBtn) {
+					gameButton.setEnabled(false);
+				}
+				clientThread.sendMessage("MINI_GAME_END/" + 4);
+			}
 		}
-		
-		
+
+		class GamePanel extends JPanel {
+			// 속성
+			private JLabel me = new JLabel(player.getName()); // 플레이어의 선택 이미지
+			private JLabel com = new JLabel("computer"); // 컴퓨터의 선택 이미지
+			private JLabel win = new JLabel("winner"); // 승리자 표시
+			private String result = ""; // 게임 결과를 저장 ("ME_WIN", "COM_WIN", "SAME")
+
+			// 생성자
+			public GamePanel() {
+				setBackground(Color.YELLOW);
+				add(me);
+				add(com);
+				add(win);
+				win.setForeground(Color.RED); // 글자색 foreground
+			}
+
+			// 결과 업데이트 메서드
+			// GamePanel 클래스 내부
+			public void updateResult(String result, int myImageIdx, int comImageIdx) {
+				this.result = result; // 결과 저장
+
+				// 플레이어와 컴퓨터의 선택에 해당하는 이미지를 설정
+				Icon myImage = gbbImage[myImageIdx];
+				Icon comImage = gbbImage[comImageIdx];
+
+				// UI 업데이트
+				draw(myImage, comImage, result);
+			}
+
+
+			// UI에 결과를 그리는 메서드
+			public void draw(Icon myImage, Icon comImage, String resultMessage) {
+				me.setIcon(myImage); // 플레이어 이미지 설정
+				com.setIcon(comImage); // 컴퓨터 이미지 설정
+				if (resultMessage.equals("Draw")){
+					win.setText("Draw!");
+				}
+				else {
+					win.setText(resultMessage + "Win!!"); // 결과 메시지 설정
+				}
+			}
+
+			// 게임 결과를 반환하는 메서드
+			public String getResult() {
+				return result;
+			}
+		}
+
 	}
-}

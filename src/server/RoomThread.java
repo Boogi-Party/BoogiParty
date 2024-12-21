@@ -15,8 +15,6 @@ public class RoomThread extends Thread {
     private final Map<String, Boolean> readyStates = new HashMap<>();
 
     private Game game;
-    private volatile boolean isMiniGameRunning = false;
-    //private GameSession gameSession; // 게임 로직을 관리하는 객체
 
     private final OnEmptyRoomCallback callback;
 
@@ -74,10 +72,6 @@ public class RoomThread extends Thread {
         }
     }
 
-    private void setMiniGameRunning(boolean state) {
-        isMiniGameRunning = state;
-    }
-
     private void broadcastUserList() {
         synchronized (clients) {
             StringBuilder userListBuilder = new StringBuilder("USER_UPDATE/");
@@ -123,8 +117,7 @@ public class RoomThread extends Thread {
                 user.sendMessage(startMessage.toString());
             }
             System.out.println("Game started with message: " + startMessage);
-
-            game.start();
+            //game.start();
         }
     }
 
@@ -144,21 +137,10 @@ public class RoomThread extends Thread {
         }
     }
 
-
     private void broadcastInGameMessage(String playerNum, String msg) {
         synchronized (clients) {
             for (UserThread user : clients) {
                 user.sendMessage("IN_GAME_MSG/" + playerNum + "/" + msg);
-            }
-        }
-    }
-
-
-    private void broadcastMiniGameState(int playerIdx, int gameType, String state) {
-        synchronized (clients) {
-            String message = "MINI_GAME_STATE/" + playerIdx + "/" + gameType + "/" + state;
-            for (UserThread client : clients) {
-                client.sendMessage(message);
             }
         }
     }
@@ -173,6 +155,19 @@ public class RoomThread extends Thread {
         }
     }
 
+    public void broadcastGBB(String msg) {
+        for (UserThread client : clients) {
+            client.sendMessage("GBB/" + msg);
+        }
+    }
+
+    public void broadcastMiniGameEnd() {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("MINI_GAME_END");
+            }
+        }
+    }
 
     private void closeRoom() {
         isRoomActive = false;
@@ -209,6 +204,7 @@ public class RoomThread extends Thread {
             return userName;
         }
 
+        boolean isMini = false;
         @Override
         public void run() {
             try {
@@ -247,16 +243,34 @@ public class RoomThread extends Thread {
                         broadcastInGameMessage(parts[1], parts[2]);
                     }
 
-//                    else if (command.equals("MINI_GAME_STATE")) {
-//                        int playerIdx = Integer.parseInt(parts[1]);
-//                        int gameType = Integer.parseInt(parts[2]);
-//                        String state = parts[3];
-//
-//                        broadcastMiniGameState(playerIdx, gameType, state);
-//                    }
                     else if (command.equals("MINI_GAME_START")) {
-                        if (parts[1].equals("8")) {
+                        //가위바위보 게임 : 한 번 클릭하면 끝
+                        if (parts[1].equals("4")) {
+                            game.game4(Integer.parseInt(parts[2]));
+                            while (true) {
+                                String s = dis.readUTF();
+                                String [] temp = s.split("/");
+                                if (temp[0].equals("MINI_GAME_END")) {
+                                    broadcastMiniGameEnd();
+                                    break;
+                                }
+                            }
+                        }
+                        //겜블 : 플레이어 클릭까지 미니게임 쓰레드 돌면서 대기해야함
+                        else if (parts[1].equals("8")) {
                             game.game8();
+                            while (true) {
+                                String s = dis.readUTF();
+                                String [] temp = s.split("/");
+                                if (temp[0].equals("MINI_GAME_END")) {
+                                    game.game8end();
+                                    break;
+                                }
+
+                            }
+                        }
+                        else if (parts[1].equals("12")) {
+                            game.game12(dis);
                             while (true) {
                                 String s = dis.readUTF();
                                 String [] temp = s.split("/");
