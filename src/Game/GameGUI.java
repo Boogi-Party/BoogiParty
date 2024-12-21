@@ -63,7 +63,7 @@ public class GameGUI extends JPanel {
 
 
 	JLabel nowPlayerLabel;
-  private MiniGame miniGame; // 여기 추가
+  public MiniGame miniGame; // 여기 추가
 
 	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo) {
 		this.clientThread = clientThread;
@@ -409,7 +409,7 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
-				for (int i = 0; i < dice; i++) {
+				for (int i = 0; i < 8; i++) {
 					move(idx);
 				}
 				offDiceNumber(dice);
@@ -565,37 +565,23 @@ public class GameGUI extends JPanel {
     // 서버에 미니게임 시작 상태 전송
     clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/START");
 
-    System.out.println("is player : " + (idx == playerIdx));
-//    MiniGame miniGame = null; // MiniGame 타입 변수
-
     if (gameType == 4) {
         miniGame = new Map4_GBBGame(player, idx == playerIdx, parent);
     } else if (gameType == 8) {
-        miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent);
+        miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent, clientThread);
     } else if (gameType == 12) {
         miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent);
     }
-
-    // 미니게임 종료 후 로직 실행
-//    if (miniGame != null) {
-//        miniGame.onMiniGameEnd();
-//        clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/END");
-//    }
-    if (miniGame != null) {
-        // 새로운 쓰레드로 미니게임 종료를 기다림
-        new Thread(() -> {
-            while (!miniGame.isGameEnded()) {
-                try {
-                    Thread.sleep(100); // 종료 상태를 반복적으로 확인
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            miniGame.onMiniGameEnd();
-            clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/END");
-        }).start();
-    }
 }
+
+public void endGame() {
+		miniGame.end();
+		for(int i=0 ;i<playerList.size(); i++) {
+			updateCoinLabel(i);
+		}
+}
+
+
  public void endMiniGame(int idx, int gameType) {
         Player player = playerList.get(idx);
         String gameName = "";

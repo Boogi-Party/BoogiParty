@@ -33,6 +33,17 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 	public boolean isGameEnded() {
 		return gameEnded; // 현재 게임 종료 상태 반환
 	}
+
+	@Override
+	public void update(String msg) {
+
+	}
+
+	@Override
+	public void end() {
+
+	}
+
 	private int hit_cnt = 0;
 	//private SoundEffect soundEffect ;
 	public Clip clip;
