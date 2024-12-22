@@ -44,18 +44,8 @@ public class Game  {
 
 	public int rollDice() {
 		dice = new Random().nextInt(6) + 1;
-		//dice = 4;
-		dice = new Random().nextInt(6) + 1;
-
-//		dice = isDiceOne ? 1 : 2; // 주사위 값 설정
-//		isDiceOne = !isDiceOne;   // 다음 호출 시 값을 토글
-//		isDiceOne = false;
-
-//		dice = 4;
 		playerIdx = (playerIdx + 1) % numPlayer;
-		//System.out.println("Player updated : " + playerIdx);
 		return dice;
-
 	}
 
 	public void game4(int choice) {
