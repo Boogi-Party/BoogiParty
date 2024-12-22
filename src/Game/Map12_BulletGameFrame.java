@@ -18,6 +18,7 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 	private int shotCount = 0;
 
 	public Map12_BulletGameFrame(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread) {
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.player = player;
 		this.isPlayer = isPlayer;
 		this.clientThread = clientThread;
@@ -130,8 +131,7 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 				baseLabel.addKeyListener(new KeyAdapter() {
 					@Override
 					public void keyPressed(KeyEvent e) {
-						if (e.getKeyChar() == '\n') {
-							System.out.println("event called");
+						if (e.getKeyChar() == '\n' && shotCount < 3) {
 							clientThread.sendMessage("");
 						}
 					}
@@ -240,7 +240,7 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 						e.printStackTrace();
 					}
 				}
-				if (shotCount == 3) {
+				if (shotCount >= 3) {
 					clientThread.sendMessage("END");
 				}
 			}

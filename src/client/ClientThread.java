@@ -145,13 +145,19 @@ public class ClientThread extends Thread {
                     gameGUI.quizStart(Integer.parseInt(parts[1]), parts[2]);
                 }
                 else if ("QUIZ_OVER".equals(command)) {
-                    System.out.println(parts.length);
-                    sendMessage("QUIZ_OVER");
                     String msg = parts[1] + "/" + parts[2];
                     if (parts.length == 4) {
                         msg += "/" + parts[3];
                     }
                     gameGUI.endQuiz(msg);
+                }
+                else if ("ITEM_USE".equals(command)) {
+                    if (parts[2].equals("1")) {
+                        gameGUI.item_plus_move(Integer.parseInt(parts[1]));
+                    }
+                    else if (parts[2].equals("2")) {
+                        gameGUI.item_attack_move(Integer.parseInt(parts[1]));
+                    }
                 }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력

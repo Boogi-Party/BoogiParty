@@ -55,12 +55,13 @@ public class Quiz extends JFrame {
 
         submitButton = new JButton("제출");
         // **엔터키 입력 처리 추가**
-        if (isPlayer) {
             answerField.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     // 제출 버튼과 동일한 동작 수행
-                    clientThread.sendMessage(answerField.getText());
+                    if (isPlayer && !answerField.getText().isEmpty()) {
+                        clientThread.sendMessage("ANSWER/" + answerField.getText());
+                    }
                     answerField.setText("");
                 }
             });
@@ -70,11 +71,12 @@ public class Quiz extends JFrame {
             submitButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    clientThread.sendMessage(answerField.getText());
+                    if (isPlayer && !answerField.getText().isEmpty()) {
+                        clientThread.sendMessage("ANSWER/" + answerField.getText());
+                    }
                     answerField.setText("");
                 }
             });
-        }
 
         add(answerField);
         add(submitButton);

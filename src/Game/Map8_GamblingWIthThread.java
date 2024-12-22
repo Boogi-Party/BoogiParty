@@ -64,6 +64,7 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 
 	public Map8_GamblingWIthThread(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread) { //생성자.
 		super("미니게임- 도전 겜블링");
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.player = player;
 		this.isPlayer = isPlayer;
 		this.clientThread = clientThread;
@@ -138,7 +139,7 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 							gameStarted[0] = true; // 게임이 시작되었음을 플래그로 설정
 						} else {
 							// 두 번째 클릭 이후: 게임 종료 메시지 전송
-							clientThread.sendMessage("MINI_GAME_END/" + 8);
+							clientThread.sendMessage("MINI_GAME_END/" + 8 + "/" + player.getID());
 						}
 					}
 				});

@@ -92,7 +92,6 @@ public class Game  {
 			try {
 				String s = dis.readUTF();
 				if (s.isEmpty()) {
-					System.out.println("bullet shot");
 					shotCount++;
 					roomThread.broadcastGame12("DRAW_BULLET");
 				}
@@ -144,13 +143,18 @@ public class Game  {
 	}
 
 	public void quiz(DataInputStream dis, String answer) throws IOException {
-		String input = dis.readUTF();
+		while (true) {
+			String input = dis.readUTF();
 
-		if (input.equals(answer)) {
-			roomThread.broadcastQuizOver("CORRECT/" + answer + "/");
-		}
-		else {
-			roomThread.broadcastQuizOver("WRONG/" + answer + "/" + input);
+			String[] parts = input.split("/");
+			if (parts[0].equals("ANSWER")) {
+				if (parts[1].equals(answer)) {
+					roomThread.broadcastQuizOver("CORRECT/" + answer);
+				} else {
+					roomThread.broadcastQuizOver("WRONG/" + answer + "/" + parts[1]);
+				}
+				break;
+			}
 		}
 	}
 

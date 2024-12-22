@@ -5,19 +5,16 @@ public class Player {
 	int coin;
 	int position;
 	String name;
-	int use_item;
 	int roundMap;
-	int laps;
 
 	// ArrayList<String> chance;
 
 	Player(int _id, String name) {
 		ID = _id;
-		coin = 500;
+		coin = 300;
 		position = 0;
 		this.name = name;
-		use_item = 0;
-		roundMap=0;
+		roundMap = 0;
 	}
 
 	public void increPosition(GameGUI gameGUI) {
@@ -30,15 +27,10 @@ public class Player {
 			gameGUI.updateCoinLabel(ID);
 			gameGUI.updateLapLabel(ID);
 		}
-		// position %= 16;
 	}
 
 	public void resetPosition() {
 		position = 0;
-	}
-
-	public int getLaps() {
-		return laps;
 	}
 	
 	public int getID() {
@@ -46,22 +38,12 @@ public class Player {
 	}
 
 
-	public int useCoin(int use) {
-		coin -= use;
-		return coin;
-	}
-
 	public int getPosition() {
 		return position;
 	}
 	
-	public int setPosition(int point) {
+	public void setPosition(int point) {
 		position = point;
-		return position;
-	}
-
-	public void increaseLaps() {
-		laps++;
 	}
 	
 	public String getName() {
@@ -76,21 +58,9 @@ public class Player {
 	public int getCoin() { //getter
 		return coin;
 	}
-	
-	public int get_use_item() {
-		return use_item;
-	}
-	
-	public int set_use_item(int use) {
-		use_item = use;
-		return use_item;
-	}
+
 	
 	public int get_roundMap() {
 		return roundMap;
-	}
-	public int item_plus_Position() {
-		 position = position + 5;
-		return position;
 	}
 }

@@ -31,7 +31,6 @@
 		@Override
 		public void end() {
 			// 결과에 따라 플레이어 코인 조정
-			System.out.println(gamePanel.getResult());
 			if (gamePanel.getResult().equals(player.getName())) {
 				player.setCoin(player.getCoin() + 10);
 			} else if (gamePanel.getResult().equals("com")) {
@@ -77,7 +76,8 @@
 		ClientThread clientThread;
 		//생성자
 		public Map4_GBBGame(Player player, boolean isPlayer, ImageIcon[] gbbImage, JFrame parentFrame, ClientThread clientThread){
-			super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌
+			super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌\
+			setDefaultCloseOperation(EXIT_ON_CLOSE);
 			this.isPlayer =	isPlayer;
 			this.player = player;
 			this.clientThread = clientThread;
@@ -138,7 +138,7 @@
 				for (JButton gameButton : menuPanel.gbbBtn) {
 					gameButton.setEnabled(false);
 				}
-				clientThread.sendMessage("MINI_GAME_END/" + 4);
+				clientThread.sendMessage("MINI_GAME_END/" + 4 + "/" + player.getID());
 			}
 		}
 
