@@ -37,7 +37,7 @@ public class GameGUI extends JPanel {
     };
 
     private Image screenImage;
-    private Image background = new ImageIcon(Main.class.getResource("/images/Board/board.png")).getImage();
+    private Image background = new ImageIcon(Main.class.getResource("/images/Board/board7.png")).getImage();
     private Image rollingDice = new ImageIcon(Main.class.getResource("/images/rollingDice_3.gif")).getImage();
     private ImageIcon[] imagePlayer;
 
@@ -285,9 +285,11 @@ public class GameGUI extends JPanel {
 
 		diceNumber = new JLabel[6];
 		for (int i = 0; i < 6; i++) {
-			diceNumber[i] = new JLabel(new ImageIcon(Main.class.getResource("/images/Board/dice" + (i + 1) + ".png")));
+			diceNumber[i] = new JLabel(new ImageIcon(Main.class.getResource("/images/Board/dice" + (i + 1) + "_v2.png")));
 //			diceNumber[i].setBounds(540, 240, 200, 220);
-			diceNumber[i].setBounds(540, 190, 200, 220);
+//			diceNumber[i].setBounds(540, 190, 200, 220);
+			diceNumber[i].setBounds(540, 160, 200, 220);
+
 
 			diceNumber[i].setVisible(false);
 			add(diceNumber[i]);
