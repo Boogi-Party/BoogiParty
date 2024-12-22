@@ -18,7 +18,7 @@ public class Main extends JFrame {
 	private String background_music = "src/audio/music.wav";
 
 	Main() {
-		setTitle("marble");
+		setTitle("Boogi Party");
 		//setUndecorated(true);
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -27,7 +27,7 @@ public class Main extends JFrame {
 		setLayout(new BorderLayout()); // 레이아웃을 BorderLayout으로 설정
 		setLocation(20, 50);
 
-		PlayMusic.load_backgroundAudio(background_music);
+		//PlayMusic.load_backgroundAudio(background_music);
 
 		setPanel(new Menu(this));
 
