@@ -135,6 +135,24 @@ public class ClientThread extends Thread {
                 else if ("HIT".equals(command)) {
                     gameGUI.miniGame.update("HIT");
                 }
+                else if ("LAP".equals(command)) {
+                    gameGUI.updateLapLabel(Integer.parseInt(parts[1]));
+                }
+                else if ("GAME_OVER".equals(command)) {
+                    gameGUI.exitGame();
+                }
+                else if ("QUIZ".equals(command)) {
+                    gameGUI.quizStart(Integer.parseInt(parts[1]), parts[2]);
+                }
+                else if ("QUIZ_OVER".equals(command)) {
+                    System.out.println(parts.length);
+                    sendMessage("QUIZ_OVER");
+                    String msg = parts[1] + "/" + parts[2];
+                    if (parts.length == 4) {
+                        msg += "/" + parts[3];
+                    }
+                    gameGUI.endQuiz(msg);
+                }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력
                 }

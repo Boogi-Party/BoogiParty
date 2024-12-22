@@ -51,6 +51,7 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 	@Override
 	public void update(String msg) {
 		if (msg.equals("DRAW_BULLET")) {
+			PlayMusic.play_actionSound("src/audio/M1-Sound.wav");
 			shotCount++;
 			gamePanel.drawBullet();
 			gamePanel.updateShotCountLabel();

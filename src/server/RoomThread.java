@@ -169,10 +169,42 @@ public class RoomThread extends Thread {
         }
     }
 
+    public void broadcastQuiz(String quiz, String answer, String idx) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("QUIZ/" + idx + "/" + quiz);
+            }
+        }
+    }
+
+    public void broadcastQuizOver(String msg) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("QUIZ_OVER/" + msg);
+            }
+        }
+    }
+
     public void broadcastMiniGameEnd() {
         synchronized (clients) {
             for (UserThread user : clients) {
                 user.sendMessage("MINI_GAME_END");
+            }
+        }
+    }
+
+    public void broadcastLap(String idx) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("LAP/" + idx);
+            }
+        }
+    }
+
+    public void broadcastGameOver(String idx) {
+        synchronized (clients) {
+            for (UserThread userThread : clients) {
+                userThread.sendMessage("GAME_OVER/" + idx);
             }
         }
     }
@@ -247,6 +279,10 @@ public class RoomThread extends Thread {
                         broadcastInGameMessage(parts[1], parts[2]);
                     }
 
+                    else if (command.equals("LAP")) {
+                        broadcastLap(parts[1]);
+                    }
+
                     else if (command.equals("MINI_GAME_START")) {
                         //가위바위보 게임 : 한 번 클릭하면 끝
                         if (parts[1].equals("4")) {
@@ -275,6 +311,15 @@ public class RoomThread extends Thread {
                         else if (parts[1].equals("12")) {
                             game.game12(dis);
                         }
+                    }
+                    else if ("QUIZ".equals(command)) {
+                        String quiz = game.getQuiz();
+                        String answer = game.getAnswer();
+                        broadcastQuiz(quiz, answer, parts[1]);
+                        game.quiz(dis, answer);
+                    }
+                    else if ("GAME_OVER".equals(command)) {
+                        broadcastGameOver(parts[1]);
                     }
                     else {
                         broadcastMessage(userName + " : " + message); // 메시지 브로드캐스트

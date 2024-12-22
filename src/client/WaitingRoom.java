@@ -193,7 +193,7 @@ public class WaitingRoom extends JPanel {
     }
 
     protected GameGUI gameStart(int numPlayer, String[] playerInfo) {
-        GameGUI gameGUI = new GameGUI(clientThread, parent, numPlayer, playerInfo);
+        GameGUI gameGUI = new GameGUI(clientThread, parent, numPlayer, playerInfo, this);
         parent.setPanel(gameGUI);
         return gameGUI;
     }

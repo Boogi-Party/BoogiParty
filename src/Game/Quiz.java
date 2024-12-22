@@ -1,20 +1,16 @@
 package Game;
 //src/Game/Quiz.java
 
+import client.ClientThread;
 import client.PlayMusic;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
 
 import javax.sound.sampled.Clip;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 public class Quiz extends JFrame {
     private JLabel questionLabel;
@@ -22,17 +18,28 @@ public class Quiz extends JFrame {
     private JButton submitButton;
     private Clip clip;
     // 현재 퀴즈 인덱스
-    private int currentQuizIndex;   
-    
-    public Quiz(Player player) {
+    private int currentQuizIndex;
+    ClientThread clientThread;
+    Player player;
+
+    public Quiz(Player player, JFrame parentFrame, boolean isPlayer, ClientThread clientThread, String question) {
+        this.clientThread = clientThread;
+        this.player = player;
         // 프레임 초기화
         setTitle("퀴즈 프로그램");
         setSize(400, 250);
-        setLocation(900, 520);
-        //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //setLocationRelativeTo(null);
         setVisible(true);
-        
+
+        if (parentFrame != null) {
+            int parentX = parentFrame.getX();
+            int parentY = parentFrame.getY();
+            int parentWidth = parentFrame.getWidth();
+            int parentHeight = parentFrame.getHeight();
+
+            int x = parentX + (parentWidth - getWidth()) / 2;
+            int y = parentY + (parentHeight - getHeight()) / 2;
+            setLocation(x, y);
+        }
 
         // 레이아웃 설정
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -45,120 +52,67 @@ public class Quiz extends JFrame {
         // 정답 입력 필드 추가
         answerField = new JTextField();
         answerField.setPreferredSize(new Dimension(400, 150));
-        add(answerField);
 
-        // 제출 버튼 추가
         submitButton = new JButton("제출");
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                checkAnswer(player);
-            }
-        });
-        add(submitButton);
+        // **엔터키 입력 처리 추가**
+        if (isPlayer) {
+            answerField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // 제출 버튼과 동일한 동작 수행
+                    clientThread.sendMessage(answerField.getText());
+                    answerField.setText("");
+                }
+            });
 
-        // 초기 퀴즈 설정
-        setRandomQuiz();
-    }
- 
-    private void setRandomQuiz() {
-        // 랜덤으로 퀴즈 선택
-        Random random = new Random();
-        currentQuizIndex = random.nextInt(quizList.length);
-        questionLabel.setText(quizList[currentQuizIndex]);
+            // 제출 버튼 추가
+
+            submitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    clientThread.sendMessage(answerField.getText());
+                    answerField.setText("");
+                }
+            });
+        }
+
+        add(answerField);
+        add(submitButton);
+        questionLabel.setText(question);
 
         // 정답 입력 필드 초기화
         answerField.setText("");
     }
-    
-   
-    // 퀴즈 리스트 배열
-    private String[] quizList = {
-    		"한성빌딩과 가장 가까운 역은?",
-    		"현재 강의는 객체지향언어2 '몇' 분반이다(대문자)",
-    		"객체지향언어2를 가장 잘 가르치는 교수님은 '000' 교수님이다.",
-    		"현 한성대 총장은 '000' 총장이다",
-    		"[OX퀴즈]한성대는 남아공의 한 대학교와 자매결연을 맺고 있다.",
-    		"한성대의 교수는?",
-    		"한성대의 교목은?",
-    		"상상부기가 가장 좋아하는음식은?",
-    		"한성대학교 교가에 등장하는 산은 '00'산이다",
-    		"해당 객체지향언어2 수업은 공학관 '000'호에서 진행된다.",
-    		"한성대학교에 있는 정자의 이름은?",
-    		"객체지향언어2는 전필인가 전선인가?",
-    		"객체지향언어2 팀플에 대한 미팅은 'N'차까지 진행되었다",
-    		"객체지향언어2 강의의 교재는 '000' 교수님이 제작하셨다",
-    		"지금 발표를 하고 있는 팀의 팀명은?",
-    		"[OX퀴즈]나는 지금 실행 중인 부루마블 게임이 매우 흡족하다.",
-    };
 
-
-
-    void checkAnswer(Player player) {
-        String userAnswer = answerField.getText();
-        String correctAnswer = getCorrectAnswer();
-
-        if (userAnswer.equals(correctAnswer)) {
-        	PlayMusic.play_actionSound("src/audio/QuizCorrect.wav");
-            JOptionPane.showMessageDialog(this, "정답입니다!", "알림", JOptionPane.INFORMATION_MESSAGE);
-           
-            player.coin += 10;
-        } else {
-        	PlayMusic.play_actionSound("src/audio/QuizFail.wav");
-            JOptionPane.showMessageDialog(this, "틀렸습니다. 정답은 " + correctAnswer + " 입니다.", "알림", JOptionPane.ERROR_MESSAGE);
-            
+    public void end(String msg) {
+        String [] parts = msg.split("/");
+        String message = "";
+        if (parts[0].equals("CORRECT")) {
+            PlayMusic.play_actionSound("src/audio/QuizCorrect.wav");
+            message = "정답입니다! 정답 : " + parts[1];
+            player.setCoin(player.getCoin() + 50);
         }
-        dispose(); // 현재 창 닫기
-        // 다음 랜덤 퀴즈 설정
-        //setRandomQuiz();
-
-        // 점수 업데이트
-        //updateScore();
-    }
-    
-
-   
-
-    private String getCorrectAnswer() {
-        // 현재 퀴즈의 정답을 반환
-        switch (currentQuizIndex) {
-            case 0:
-                return "신설동역";
-            case 1:
-                return "B";
-            case 2:
-                return "유상미";
-            case 3:
-                return "이창원";
-            case 4:
-            	return "O";
-            case 5:
-            	return "거북";
-            case 6:
-            	return "삼학송";
-            case 7:
-            	return "상추";
-            case 8:
-            	return "북악";
-            case 9:
-            	return "202";
-            case 10:
-            	return "의화정";
-            case 11:
-            	return "전선";
-            case 12:
-            	return "3";
-            case 13:
-            	return "황기태";
-            case 14:
-            	return "똑똑이들";
-            case 15:
-            	return "O";
-            default:
-                return "";
-
+        else {
+            message = "틀렸습니다... 정답 : " + parts[1] + "입력 :" + parts[2];
+            PlayMusic.play_actionSound("src/audio/QuizFail.wav");
         }
-    }
 
-	
+        JDialog dialog = new JDialog(this, "게임 결과", false);
+        dialog.setLayout(new BorderLayout());
+        JLabel label = new JLabel(message, SwingConstants.CENTER);
+        label.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
+        dialog.add(label, BorderLayout.CENTER);
+        dialog.setSize(300, 150);
+        dialog.setLocationRelativeTo(this);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 기본 닫기 설정
+        dialog.setVisible(true);
+
+        // 일정 시간 후에 다이얼로그와 프레임 종료
+        Timer timer = new Timer(2000, e -> {
+            dialog.dispose(); // 다이얼로그 닫기
+            dispose(); // JFrame 종료
+        });
+        timer.setRepeats(false); // 타이머 반복 방지
+        timer.start();
+    }
 }

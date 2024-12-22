@@ -4,6 +4,7 @@ package Game;
 import client.ClientThread;
 import client.Main;
 import client.PlayMusic;
+import client.WaitingRoom;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -11,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import javax.sound.sampled.Clip;
 import javax.swing.*;
@@ -52,6 +54,7 @@ public class GameGUI extends JPanel {
 	ArrayList<JLabel> playerCoin = new ArrayList<>();
 	ArrayList<JPanel> playerPanels = new ArrayList<>();
 	ArrayList<SpeechBubble> playerBubbles = new ArrayList<>();
+	ArrayList<JLabel> playerLaps = new ArrayList<>();
 
 	JButton rollDiceButton;
 
@@ -71,11 +74,14 @@ public class GameGUI extends JPanel {
 
 	private JTextField chatInput;
 
+	WaitingRoom waitingRoom;
 
 	JLabel nowPlayerLabel;
-  public MiniGame miniGame; // 여기 추가
+  	public MiniGame miniGame; // 여기 추가
+	public Quiz quiz;
 
-	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo) {
+	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo, WaitingRoom waitingRoom) {
+		this.waitingRoom = waitingRoom;
 		this.clientThread = clientThread;
 		this.parent = parent;
 		this.numPlayer = numPlayer;
@@ -104,7 +110,7 @@ public class GameGUI extends JPanel {
 
 			// 예시: 플레이어 별 정보 설정
 			JLabel playerImg = new JLabel();
-			ImageIcon playerIcon = new ImageIcon(Main.class.getResource("/images/Board/player"+i+"_info.png"));
+			ImageIcon playerIcon = new ImageIcon(Main.class.getResource("/images/Board/player" + i + "_info.png"));
 			playerImg.setIcon(playerIcon);
 			playerImg.setBounds(10, 10, 80, 80);
 			playerImg.setHorizontalAlignment(JLabel.CENTER);
@@ -117,7 +123,6 @@ public class GameGUI extends JPanel {
 
 			updateID_Label(i);
 
-
 			JLabel playerCoinLabel = new JLabel();
 			playerCoinLabel.setBounds(100, 50, 80, 20);
 			playerCoinLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
@@ -125,9 +130,20 @@ public class GameGUI extends JPanel {
 			playerCoin.add(playerCoinLabel);
 			updateCoinLabel(i);
 
+			// ** 라운드 수를 표시하는 JLabel 추가 **
+			JLabel playerLapLabel = new JLabel();
+			playerLapLabel.setBounds(200, 50, 80, 20); // 적절한 위치 설정
+			playerLapLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
+			playerLapLabel.setText("0 Laps"); // 초기 값은 "0 Laps"로 설정
+			playerLaps.add(playerLapLabel); // 라운드 수 리스트에 추가
+
+			// 필요시 라운드 업데이트 함수 호출
+			updateLapLabel(i);
+
 			playerPanel.add(playerImg);
 			playerPanel.add(playerIdLabel);
 			playerPanel.add(playerCoinLabel);
+			playerPanel.add(playerLapLabel); // 라운드 수 JLabel 추가
 
 			playerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 			playerPanel.setBounds(1200, 100 * i, 300, 100);
@@ -145,8 +161,8 @@ public class GameGUI extends JPanel {
 			playerBubbles.add(playerBubble);
 			add(playerBubble); // 기존 컴포넌트 위에 추가
 			setComponentZOrder(playerBubble, 0); // 말풍선이 다른 컴포넌트들 위로 오도록 설정
-
 		}
+
 
 		extraPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 
@@ -404,9 +420,13 @@ public class GameGUI extends JPanel {
 		playerId.get(i).setText("ID : " + playerList.get(i).getName());
 	}
 
+	public void updateLapLabel(int i) {
+		playerLaps.get(i).setText(playerList.get(i).get_roundMap() + " Laps"); // 라벨에 업데이트
+	}
+
 	//주사위 굴러가는스레드
 	public void rollDiceMotion(int idx, int dice) {
-		new Thread(new Runnable() {
+		Thread diceThread = new Thread(new Runnable() {
 			public void run() {
 				rollDice = true;
 				rollDiceButton.setVisible(false);
@@ -421,7 +441,7 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
-				for (int i = 0; i < 12; i++) {
+				for (int i = 0; i < dice; i++) {
 					move(idx);
 				}
 				offDiceNumber(dice);
@@ -431,17 +451,25 @@ public class GameGUI extends JPanel {
 				}
 
 				sameGround(idx);
-
 			}
-		}).start();
+		});
+		// 쓰레드 실행
+		diceThread.start();
 
+		// 쓰레드가 끝날 때까지 대기
+		try {
+			diceThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// 쓰레드 종료 후 실행
 		nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
 	}
 
 	public void move(int idx) {
 		Player player = playerList.get(idx);
 		Point prePoint = pointManager.getPlayerPoint(idx, player.getPosition());
-		player.increPosition();
+		player.increPosition(this);
 		Point nextPoint = pointManager.getPlayerPoint(idx, player.getPosition());
 		for (int i = 0; i < 20; i++) {
 			Point interPoint = new Point((prePoint.x * (20 - i) + nextPoint.x * i) / 20,
@@ -453,6 +481,11 @@ public class GameGUI extends JPanel {
 				ex.printStackTrace();
 			}
 		}
+
+		if (player.get_roundMap() >= 1) {
+			gameOver(idx);
+		}
+
 		playerMove(player, nextPoint);
 	}
 
@@ -468,14 +501,12 @@ public class GameGUI extends JPanel {
 		} else if (player.getPosition() == 8) {
 			clientThread.sendMessage("MINI_GAME/" + idx + "/8");
 		} else if (player.getPosition() == 12) {
+			player.increaseLaps();
 			clientThread.sendMessage("MINI_GAME/" + idx + "/12");
-		} else if (player.getPosition() == 0) {
-
-		} else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
+		}
+		 else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
 				|| player.getPosition() == 14) {
-			//clientThread.sendMessage("QUIZ/" + idx + "/4");
-			//new Quiz(player);
-			//new Game.Map8_GamblingWIthThread(player);
+			 clientThread.sendMessage("QUIZ/" + idx);
 		}
 	}
 
@@ -568,7 +599,6 @@ public class GameGUI extends JPanel {
 
 	  public void miniGameStart(int idx, int gameType) {
 		Player player = playerList.get(idx);
-
 		if (gameType == 4) {
 			miniGame = new Map4_GBBGame(player, idx == playerIdx, gbbImage, parent, clientThread);
 		} else if (gameType == 8) {
@@ -576,6 +606,19 @@ public class GameGUI extends JPanel {
 		} else if (gameType == 12) {
 			miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent, clientThread);
 		}
+	}
+
+	public void quizStart(int idx, String question) {
+		Player player = playerList.get(idx);
+		quiz = new Quiz(player, parent, idx == playerIdx, clientThread, question);
+	}
+
+	public void endQuiz(String msg) {
+		quiz.end(msg);
+		for(int i=0 ;i<playerList.size(); i++) {
+			updateCoinLabel(i);
+		}
+		quiz = null;
 	}
 
 	public void endGame() {
@@ -617,14 +660,12 @@ public class GameGUI extends JPanel {
 		repaint();
 	}
 
-    
+	public void gameOver(int idx) {
+		clientThread.sendMessage("GAME_OVER/" + idx);
+	}
 
- 
-
-          
-
-
-
-   
-
+	public void exitGame() {
+		parent.setScreenNotGameSize();
+		parent.setPanel(waitingRoom);
+	}
 }

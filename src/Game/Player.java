@@ -7,6 +7,7 @@ public class Player {
 	String name;
 	int use_item;
 	int roundMap;
+	int laps;
 
 	// ArrayList<String> chance;
 
@@ -19,13 +20,15 @@ public class Player {
 		roundMap=0;
 	}
 
-	public void increPosition() {
+	public void increPosition(GameGUI gameGUI) {
 		position++;
 		//한바퀴 돌았을 때 위치초기화, 코인지급, 바퀴수 증가
 		if (position == 16) {
 			position = 0;
 			coin += 750;
 			roundMap++;
+			gameGUI.updateCoinLabel(ID);
+			gameGUI.updateLapLabel(ID);
 		}
 		// position %= 16;
 	}
@@ -34,6 +37,9 @@ public class Player {
 		position = 0;
 	}
 
+	public int getLaps() {
+		return laps;
+	}
 	
 	public int getID() {
 		return ID;
@@ -52,6 +58,10 @@ public class Player {
 	public int setPosition(int point) {
 		position = point;
 		return position;
+	}
+
+	public void increaseLaps() {
+		laps++;
 	}
 	
 	public String getName() {

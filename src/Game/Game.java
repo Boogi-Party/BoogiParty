@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Random;
 import javax.swing.*;
 
 public class Game  {
@@ -42,8 +43,8 @@ public class Game  {
 	}
 
 	public int rollDice() {
-		//dice = new Random().nextInt(6) + 1;
-		dice = 4;
+		dice = new Random().nextInt(6) + 1;
+		//dice = 4;
 		playerIdx = (playerIdx + 1) % numPlayer;
 		//System.out.println("Player updated : " + playerIdx);
 		return dice;
@@ -97,8 +98,6 @@ public class Game  {
 					System.out.println("bullet shot");
 					shotCount++;
 					roomThread.broadcastGame12("DRAW_BULLET");
-
-					PlayMusic.play_actionSound("src/audio/M1-Sound.wav");
 				}
 				else if (s.equals("HIT")) {
 					roomThread.broadcastGame12("HIT");
@@ -110,6 +109,91 @@ public class Game  {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+
+		}
+	}
+
+	// 퀴즈 리스트 배열
+	private String[] quizList = {
+			"한성빌딩과 가장 가까운 역은?",
+			"현재 강의는 객체지향언어2 '몇' 분반이다(대문자)",
+			"객체지향언어2를 가장 잘 가르치는 교수님은 '000' 교수님이다.",
+			"현 한성대 총장은 '000' 총장이다",
+			"[OX퀴즈]한성대는 남아공의 한 대학교와 자매결연을 맺고 있다.",
+			"한성대의 교수는?",
+			"한성대의 교목은?",
+			"상상부기가 가장 좋아하는음식은?",
+			"한성대학교 교가에 등장하는 산은 '00'산이다",
+			"해당 객체지향언어2 수업은 공학관 '000'호에서 진행된다.",
+			"한성대학교에 있는 정자의 이름은?",
+			"객체지향언어2는 전필인가 전선인가?",
+			"객체지향언어2 팀플에 대한 미팅은 'N'차까지 진행되었다",
+			"객체지향언어2 강의의 교재는 '000' 교수님이 제작하셨다",
+			"지금 발표를 하고 있는 팀의 팀명은?",
+			"[OX퀴즈]나는 지금 실행 중인 부루마블 게임이 매우 흡족하다.",
+	};
+
+	int currentQuizIndex;
+
+	public String getQuiz() {
+		Random random = new Random();
+		currentQuizIndex = random.nextInt(quizList.length);
+
+		return quizList[currentQuizIndex];
+	}
+
+	public String getAnswer() {
+		return getCorrectAnswer(currentQuizIndex);
+	}
+
+	public void quiz(DataInputStream dis, String answer) throws IOException {
+		String input = dis.readUTF();
+
+		if (input.equals(answer)) {
+			roomThread.broadcastQuizOver("CORRECT/" + answer + "/");
+		}
+		else {
+			roomThread.broadcastQuizOver("WRONG/" + answer + "/" + input);
+		}
+	}
+
+	private String getCorrectAnswer(int currentQuizIndex) {
+		// 현재 퀴즈의 정답을 반환
+		switch (currentQuizIndex) {
+			case 0:
+				return "신설동역";
+			case 1:
+				return "B";
+			case 2:
+				return "유상미";
+			case 3:
+				return "이창원";
+			case 4:
+				return "O";
+			case 5:
+				return "거북";
+			case 6:
+				return "삼학송";
+			case 7:
+				return "상추";
+			case 8:
+				return "북악";
+			case 9:
+				return "202";
+			case 10:
+				return "의화정";
+			case 11:
+				return "전선";
+			case 12:
+				return "3";
+			case 13:
+				return "황기태";
+			case 14:
+				return "똑똑이들";
+			case 15:
+				return "O";
+			default:
+				return "";
 
 		}
 	}
