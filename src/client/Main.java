@@ -10,9 +10,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Main extends JFrame {
 	public static final int SCREEN_WIDTH = 1500;
 	public static final int SCREEN_HEIGHT = 720;
-
-	client.Menu frameMenu;
-	Game game;
 	JPanel screen;
 
 	private String background_music = "src/audio/music.wav";
@@ -44,19 +41,6 @@ public class Main extends JFrame {
 		repaint();
 	}
 
-	public void startGame(int numPlayer) {
-		removeAll();
-		frameMenu.setVisible(false);
-		//game = new Game(this, numPlayer);
-		game.start();
-	}
-
-	public void showMenu() {
-		if (game != null) {
-			game.close();
-		}
-		frameMenu.setVisible(true);
-	}
 	public void setScreenGameSize() {
 		setLayout(null);
 //		setSize(1500, 720);

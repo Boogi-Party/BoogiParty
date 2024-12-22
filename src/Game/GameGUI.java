@@ -4,6 +4,7 @@ package Game;
 import client.ClientThread;
 import client.Main;
 import client.PlayMusic;
+import client.WaitingRoom;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,16 @@ import javax.swing.border.LineBorder;
 
 @SuppressWarnings("serial")
 public class GameGUI extends JPanel {
+	private static final ImageIcon[] gbbImage;
+
+	static {
+		gbbImage = new ImageIcon[]{
+				new ImageIcon(Main.class.getResource("/images/gawi.jpg")),
+				new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
+				new ImageIcon(Main.class.getResource("/images/bo.jpg"))
+		};
+	}
+
     Color[] playerColors = {
             new Color(173, 216, 230), // Light Blue
             new Color(152, 251, 152), // Pale Green
@@ -42,6 +53,7 @@ public class GameGUI extends JPanel {
 	ArrayList<JLabel> playerCoin = new ArrayList<>();
 	ArrayList<JPanel> playerPanels = new ArrayList<>();
 	ArrayList<SpeechBubble> playerBubbles = new ArrayList<>();
+	ArrayList<JLabel> playerLaps = new ArrayList<>();
 
 	JButton rollDiceButton;
 
@@ -61,11 +73,14 @@ public class GameGUI extends JPanel {
 
 	private JTextField chatInput;
 
+	WaitingRoom waitingRoom;
 
 	JLabel nowPlayerLabel;
-  public MiniGame miniGame; // 여기 추가
+  	public MiniGame miniGame; // 여기 추가
+	public Quiz quiz;
 
-	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo) {
+	public GameGUI(ClientThread clientThread, Main parent, int numPlayer, String[] playerInfo, WaitingRoom waitingRoom) {
+		this.waitingRoom = waitingRoom;
 		this.clientThread = clientThread;
 		this.parent = parent;
 		this.numPlayer = numPlayer;
@@ -94,7 +109,7 @@ public class GameGUI extends JPanel {
 
 			// 예시: 플레이어 별 정보 설정
 			JLabel playerImg = new JLabel();
-			ImageIcon playerIcon = new ImageIcon(Main.class.getResource("/images/Board/player"+i+"_info.png"));
+			ImageIcon playerIcon = new ImageIcon(Main.class.getResource("/images/Board/player" + i + "_info.png"));
 			playerImg.setIcon(playerIcon);
 			playerImg.setBounds(10, 10, 80, 80);
 			playerImg.setHorizontalAlignment(JLabel.CENTER);
@@ -107,7 +122,6 @@ public class GameGUI extends JPanel {
 
 			updateID_Label(i);
 
-
 			JLabel playerCoinLabel = new JLabel();
 //			playerCoinLabel.setBounds(100, 50, 80, 20);
 			playerCoinLabel.setBounds(100, 50, 100, 20);
@@ -117,9 +131,20 @@ public class GameGUI extends JPanel {
 			playerCoin.add(playerCoinLabel);
 			updateCoinLabel(i);
 
+			// ** 라운드 수를 표시하는 JLabel 추가 **
+			JLabel playerLapLabel = new JLabel();
+			playerLapLabel.setBounds(200, 50, 80, 20); // 적절한 위치 설정
+			playerLapLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
+			playerLapLabel.setText("0 Laps"); // 초기 값은 "0 Laps"로 설정
+			playerLaps.add(playerLapLabel); // 라운드 수 리스트에 추가
+
+			// 필요시 라운드 업데이트 함수 호출
+			updateLapLabel(i);
+
 			playerPanel.add(playerImg);
 			playerPanel.add(playerIdLabel);
 			playerPanel.add(playerCoinLabel);
+			playerPanel.add(playerLapLabel); // 라운드 수 JLabel 추가
 
 			playerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 			playerPanel.setBounds(1200, 100 * i, 300, 100);
@@ -137,7 +162,6 @@ public class GameGUI extends JPanel {
 			playerBubbles.add(playerBubble);
 			add(playerBubble); // 기존 컴포넌트 위에 추가
 			setComponentZOrder(playerBubble, 0); // 말풍선이 다른 컴포넌트들 위로 오도록 설정
-
 		}
 
 		extraPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -302,7 +326,9 @@ public class GameGUI extends JPanel {
 		rollDiceButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				clientThread.sendMessage("ROLL_DICE/" + playerIdx);
+				if (miniGame == null) {
+					clientThread.sendMessage("ROLL_DICE/" + playerIdx);
+				}
 			}
 		});
 		add(rollDiceButton);
@@ -398,9 +424,13 @@ public class GameGUI extends JPanel {
 		playerId.get(i).setText("ID : " + playerList.get(i).getName());
 	}
 
+	public void updateLapLabel(int i) {
+		playerLaps.get(i).setText(playerList.get(i).get_roundMap() + " Laps"); // 라벨에 업데이트
+	}
+
 	//주사위 굴러가는스레드
 	public void rollDiceMotion(int idx, int dice) {
-		new Thread(new Runnable() {
+		Thread diceThread = new Thread(new Runnable() {
 			public void run() {
 				rollDice = true;
 				rollDiceButton.setVisible(false);
@@ -428,23 +458,27 @@ public class GameGUI extends JPanel {
 				if (playerIdx == idx) {
 					reachGround(idx);
 				}
-				sameGround(idx);
 
-				// 쓰레드가 끝난 후 실행할 UI 코드
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
-					}
-				});
+				sameGround(idx);
 			}
-		}).start();
+		});
+		// 쓰레드 실행
+		diceThread.start();
+
+		// 쓰레드가 끝날 때까지 대기
+		try {
+			diceThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// 쓰레드 종료 후 실행
+		nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
 	}
 
 	public void move(int idx) {
 		Player player = playerList.get(idx);
 		Point prePoint = pointManager.getPlayerPoint(idx, player.getPosition());
-		player.increPosition();
+		player.increPosition(this);
 		Point nextPoint = pointManager.getPlayerPoint(idx, player.getPosition());
 		for (int i = 0; i < 20; i++) {
 			Point interPoint = new Point((prePoint.x * (20 - i) + nextPoint.x * i) / 20,
@@ -456,6 +490,11 @@ public class GameGUI extends JPanel {
 				ex.printStackTrace();
 			}
 		}
+
+		if (player.get_roundMap() >= 1) {
+			gameOver(idx);
+		}
+
 		playerMove(player, nextPoint);
 	}
 
@@ -471,14 +510,12 @@ public class GameGUI extends JPanel {
 		} else if (player.getPosition() == 8) {
 			clientThread.sendMessage("MINI_GAME/" + idx + "/8");
 		} else if (player.getPosition() == 12) {
+			player.increaseLaps();
 			clientThread.sendMessage("MINI_GAME/" + idx + "/12");
-		} else if (player.getPosition() == 0) {
-
-		} else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
+		}
+		 else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
 				|| player.getPosition() == 14) {
-			//clientThread.sendMessage("QUIZ/" + idx + "/4");
-			//new Quiz(player);
-			//new Game.Map8_GamblingWIthThread(player);
+			 clientThread.sendMessage("QUIZ/" + idx);
 		}
 	}
 
@@ -569,60 +606,38 @@ public class GameGUI extends JPanel {
 	}
 
 
-  public void miniGameStart(int idx, int gameType) {
-    Player player = playerList.get(idx);
-    System.out.println("is player : " + (idx == playerIdx));
+	  public void miniGameStart(int idx, int gameType) {
+		Player player = playerList.get(idx);
+		if (gameType == 4) {
+			miniGame = new Map4_GBBGame(player, idx == playerIdx, gbbImage, parent, clientThread);
+		} else if (gameType == 8) {
+			miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent, clientThread);
+		} else if (gameType == 12) {
+			miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent, clientThread);
+		}
+	}
 
-    // 서버에 미니게임 시작 상태 전송
-    clientThread.sendMessage("MINI_GAME_STATE/" + idx + "/" + gameType + "/START");
+	public void quizStart(int idx, String question) {
+		Player player = playerList.get(idx);
+		quiz = new Quiz(player, parent, idx == playerIdx, clientThread, question);
+	}
 
-    if (gameType == 4) {
-        miniGame = new Map4_GBBGame(player, idx == playerIdx, parent);
-    } else if (gameType == 8) {
-        miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent, clientThread);
-    } else if (gameType == 12) {
-        miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent);
-    }
-}
-
-public void endGame() {
-		miniGame.end();
+	public void endQuiz(String msg) {
+		quiz.end(msg);
 		for(int i=0 ;i<playerList.size(); i++) {
 			updateCoinLabel(i);
 		}
-}
+		quiz = null;
+	}
 
+	public void endGame() {
+			miniGame.end();
+			for(int i=0 ;i<playerList.size(); i++) {
+				updateCoinLabel(i);
+			}
+			miniGame = null;
+	}
 
- public void endMiniGame(int idx, int gameType) {
-        Player player = playerList.get(idx);
-        String gameName = "";
-
-        // 게임 유형에 따라 이름 설정 (예: 4: 가위바위보, 8: 도박 게임, 12: 총알 게임)
-        switch (gameType) {
-            case 4:
-                gameName = "가위바위보";
-                break;
-            case 8:
-                gameName = "도박 게임";
-                break;
-            case 12:
-                gameName = "총알 게임";
-                break;
-            default:
-                gameName = "알 수 없는 게임";
-        }
-
-        // 미니게임 종료 메시지 출력
-        System.out.println("Player " + player.getName() + " has finished the mini-game: " + gameName);
-        JOptionPane.showMessageDialog(this, "Player " + player.getName() + "의 " + gameName + " 미니게임이 종료되었습니다!");
-
-        // 필요한 경우, UI 상태 업데이트
-        rollDiceButton.setEnabled(true); // 주사위 버튼 활성화
-        repaint(); // 화면 갱신
-    }
-
-  
-  
 	public void offRollingDice() {
 		rollDice = false;
 	}
@@ -658,5 +673,12 @@ public void endGame() {
 		repaint();
 	}
 
+	public void gameOver(int idx) {
+		clientThread.sendMessage("GAME_OVER/" + idx);
+	}
 
+	public void exitGame() {
+		parent.setScreenNotGameSize();
+		parent.setPanel(waitingRoom);
+	}
 }

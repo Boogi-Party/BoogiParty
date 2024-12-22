@@ -15,8 +15,6 @@ public class RoomThread extends Thread {
     private final Map<String, Boolean> readyStates = new HashMap<>();
 
     private Game game;
-    private volatile boolean isMiniGameRunning = false;
-    //private GameSession gameSession; // 게임 로직을 관리하는 객체
 
     private final OnEmptyRoomCallback callback;
 
@@ -74,10 +72,6 @@ public class RoomThread extends Thread {
         }
     }
 
-    private void setMiniGameRunning(boolean state) {
-        isMiniGameRunning = state;
-    }
-
     private void broadcastUserList() {
         synchronized (clients) {
             StringBuilder userListBuilder = new StringBuilder("USER_UPDATE/");
@@ -123,8 +117,7 @@ public class RoomThread extends Thread {
                 user.sendMessage(startMessage.toString());
             }
             System.out.println("Game started with message: " + startMessage);
-
-            game.start();
+            //game.start();
         }
     }
 
@@ -144,21 +137,10 @@ public class RoomThread extends Thread {
         }
     }
 
-
     private void broadcastInGameMessage(String playerNum, String msg) {
         synchronized (clients) {
             for (UserThread user : clients) {
                 user.sendMessage("IN_GAME_MSG/" + playerNum + "/" + msg);
-            }
-        }
-    }
-
-
-    private void broadcastMiniGameState(int playerIdx, int gameType, String state) {
-        synchronized (clients) {
-            String message = "MINI_GAME_STATE/" + playerIdx + "/" + gameType + "/" + state;
-            for (UserThread client : clients) {
-                client.sendMessage(message);
             }
         }
     }
@@ -173,6 +155,59 @@ public class RoomThread extends Thread {
         }
     }
 
+    public void broadcastGBB(String msg) {
+        for (UserThread client : clients) {
+            client.sendMessage("GBB/" + msg);
+        }
+    }
+
+    public void broadcastGame12(String msg) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage(msg);
+            }
+        }
+    }
+
+    public void broadcastQuiz(String quiz, String answer, String idx) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("QUIZ/" + idx + "/" + quiz);
+            }
+        }
+    }
+
+    public void broadcastQuizOver(String msg) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("QUIZ_OVER/" + msg);
+            }
+        }
+    }
+
+    public void broadcastMiniGameEnd() {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("MINI_GAME_END");
+            }
+        }
+    }
+
+    public void broadcastLap(String idx) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage("LAP/" + idx);
+            }
+        }
+    }
+
+    public void broadcastGameOver(String idx) {
+        synchronized (clients) {
+            for (UserThread userThread : clients) {
+                userThread.sendMessage("GAME_OVER/" + idx);
+            }
+        }
+    }
 
     private void closeRoom() {
         isRoomActive = false;
@@ -217,7 +252,6 @@ public class RoomThread extends Thread {
                     String[] parts = message.split("/", 4);
 
                     String command = parts[0];
-
                     if (command.equals("EXIT_ROOM")) {
                         break;
                     } else if (command.equals("START_GAME")) {
@@ -230,8 +264,6 @@ public class RoomThread extends Thread {
 
                     } else if (command.equals("ROLL_DICE")) {
                         // parts[1]: 플레이어 번호, parts[2]: 주사위 값
-                        //System.out.println("now player : " + game.getPlayerIdx());
-
                         if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
                             int dice = game.rollDice();
 
@@ -247,15 +279,25 @@ public class RoomThread extends Thread {
                         broadcastInGameMessage(parts[1], parts[2]);
                     }
 
-//                    else if (command.equals("MINI_GAME_STATE")) {
-//                        int playerIdx = Integer.parseInt(parts[1]);
-//                        int gameType = Integer.parseInt(parts[2]);
-//                        String state = parts[3];
-//
-//                        broadcastMiniGameState(playerIdx, gameType, state);
-//                    }
+                    else if (command.equals("LAP")) {
+                        broadcastLap(parts[1]);
+                    }
+
                     else if (command.equals("MINI_GAME_START")) {
-                        if (parts[1].equals("8")) {
+                        //가위바위보 게임 : 한 번 클릭하면 끝
+                        if (parts[1].equals("4")) {
+                            game.game4(Integer.parseInt(parts[2]));
+                            while (true) {
+                                String s = dis.readUTF();
+                                String [] temp = s.split("/");
+                                if (temp[0].equals("MINI_GAME_END")) {
+                                    broadcastMiniGameEnd();
+                                    break;
+                                }
+                            }
+                        }
+                        //겜블 : 플레이어 클릭까지 미니게임 쓰레드 돌면서 대기해야함
+                        else if (parts[1].equals("8")) {
                             game.game8();
                             while (true) {
                                 String s = dis.readUTF();
@@ -264,11 +306,21 @@ public class RoomThread extends Thread {
                                     game.game8end();
                                     break;
                                 }
-
                             }
                         }
+                        else if (parts[1].equals("12")) {
+                            game.game12(dis);
+                        }
                     }
-
+                    else if ("QUIZ".equals(command)) {
+                        String quiz = game.getQuiz();
+                        String answer = game.getAnswer();
+                        broadcastQuiz(quiz, answer, parts[1]);
+                        game.quiz(dis, answer);
+                    }
+                    else if ("GAME_OVER".equals(command)) {
+                        broadcastGameOver(parts[1]);
+                    }
                     else {
                         broadcastMessage(userName + " : " + message); // 메시지 브로드캐스트
                     }

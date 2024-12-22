@@ -120,27 +120,38 @@ public class ClientThread extends Thread {
                 else if ("IN_GAME_MSG".equals(command)) {
                     gameGUI.renderChatMessage(Integer.parseInt(parts[1]), parts[2]);
                 }
-
-                else if ("MINI_GAME_STATE".equals(command)) {
-                    int playerIdx = Integer.parseInt(parts[1]); // 미니게임을 수행하는 플레이어
-                    int gameType = Integer.parseInt(parts[2]); // 미니게임 유형
-                    String state = parts[3]; // 미니게임 상태 (START, END 등)
-
-                    if ("START".equals(state)) {
-                       // gameGUI.miniGameStart(playerIdx, gameType);
-                    } else if ("END".equals(state)) {
-                        gameGUI.endMiniGame(playerIdx, gameType); // 미니게임 종료 처리
-                    }
-                }
                 else if ("GAMBLING".equals(command)) {
+                    gameGUI.miniGame.update(parts[1] + "/" + parts[2] + "/" + parts[3]);
+                }
+                else if ("GBB".equals(command)) {
+                    gameGUI.miniGame.update(parts[1] + "/" + parts[2] + "/" + parts[3]);
+                }
+                else if ("MINI_GAME_END".equals(command)) {
+                    gameGUI.endGame();
+                }
+                else if ("DRAW_BULLET".equals(command)) {
+                    gameGUI.miniGame.update("DRAW_BULLET");
+                }
+                else if ("HIT".equals(command)) {
+                    gameGUI.miniGame.update("HIT");
+                }
+                else if ("LAP".equals(command)) {
+                    gameGUI.updateLapLabel(Integer.parseInt(parts[1]));
+                }
+                else if ("GAME_OVER".equals(command)) {
+                    gameGUI.exitGame();
+                }
+                else if ("QUIZ".equals(command)) {
+                    gameGUI.quizStart(Integer.parseInt(parts[1]), parts[2]);
+                }
+                else if ("QUIZ_OVER".equals(command)) {
+                    System.out.println(parts.length);
+                    sendMessage("QUIZ_OVER");
+                    String msg = parts[1] + "/" + parts[2];
                     if (parts.length == 4) {
-                        System.out.println("gamble screen update");
-                        gameGUI.miniGame.update(parts[1] + "/" + parts[2] + "/" + parts[3]);
+                        msg += "/" + parts[3];
                     }
-                    else if (parts.length == 5) {
-                        System.out.println("gambel end msg");
-                        gameGUI.endGame();
-                    }
+                    gameGUI.endQuiz(msg);
                 }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력

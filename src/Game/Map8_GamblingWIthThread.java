@@ -12,17 +12,6 @@ import javax.swing.*;//아스테리스크 쓰면 다른거 다 import
 
 
 public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
-	private boolean gameEnded = false; // 게임 종료 상태를 추적하는 플래그
-	@Override
-	public void onMiniGameEnd() {
-		// 미니게임 종료 후 작업
-		System.out.println("Map8 도박 게임 종료");
-	}
-	@Override
-	public boolean isGameEnded() {
-		return gameEnded; // 현재 게임 종료 상태 반환
-	}
-
 	@Override
 	public void update(String msg) {
 		String [] parts = msg.split("/");
@@ -60,18 +49,12 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dialog.dispose(); // 다이얼로그 닫기
-				gameEnded = true; // 게임 종료 플래그 설정
-				onMiniGameEnd(); // 미니게임 종료 콜백 호출
 				dispose(); // JFrame 종료
 			}
 		});
 		timer.setRepeats(false); // 타이머 반복 방지
 		timer.start();
 	}
-
-
-
-
 
 	private Player player;  // 멤버 변수로 선언
 	private boolean isPlayer;
@@ -149,15 +132,12 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 				addMouseListener(new MouseAdapter() {
 					@Override
 					public void mousePressed(MouseEvent e) {
-						System.out.println("gamble start");
 						if (!gameStarted[0]) {
 							// 첫 번째 클릭: 게임 시작 메시지 전송
-							System.out.println("GAMBLE START MSG");
 							clientThread.sendMessage("MINI_GAME_START/" + 8);
 							gameStarted[0] = true; // 게임이 시작되었음을 플래그로 설정
 						} else {
 							// 두 번째 클릭 이후: 게임 종료 메시지 전송
-							System.out.println("GAMBLE END MSG");
 							clientThread.sendMessage("MINI_GAME_END/" + 8);
 						}
 					}
