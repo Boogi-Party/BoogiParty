@@ -129,6 +129,12 @@ public class ClientThread extends Thread {
                 else if ("MINI_GAME_END".equals(command)) {
                     gameGUI.endGame();
                 }
+                else if ("DRAW_BULLET".equals(command)) {
+                    gameGUI.miniGame.update("DRAW_BULLET");
+                }
+                else if ("HIT".equals(command)) {
+                    gameGUI.miniGame.update("HIT");
+                }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력
                 }

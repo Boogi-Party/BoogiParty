@@ -56,10 +56,6 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 		timer.start();
 	}
 
-
-
-
-
 	private Player player;  // 멤버 변수로 선언
 	private boolean isPlayer;
 	public Clip clip;

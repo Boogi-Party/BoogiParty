@@ -4,6 +4,10 @@ import client.PlayMusic;
 import server.RoomThread;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import javax.swing.*;
@@ -79,59 +83,66 @@ public class Game  {
 		gt.start();
 	}
 
-	public void game12() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					System.out.println("Press Enter to execute foo()...");
-					while (true) {
-						String input =
-						// 엔터키 (ASCII: 10 또는 13 depending on OS)
-						if (input == '\n' || input == '\r') {
-							foo(); // 엔터키 입력 시 foo() 실행
-							break; // 한 번 실행 후 스레드 종료
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
 
 	public void game8end() {
 		gt.gamble();
 	}
 
+	public void game12(DataInputStream dis) {
+		int shotCount = 0;
+		while (true) {
+			try {
+				String s = dis.readUTF();
+				if (s.isEmpty()) {
+					System.out.println("bullet shot");
+					shotCount++;
+					roomThread.broadcastGame12("DRAW_BULLET");
+
+					PlayMusic.play_actionSound("src/audio/M1-Sound.wav");
+				}
+				else if (s.equals("HIT")) {
+					roomThread.broadcastGame12("HIT");
+				}
+				else if (s.equals("END")) {
+					roomThread.broadcastMiniGameEnd();
+					break;
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+
+		}
+	}
+
 	class GamblingThread extends Thread{
 		//속성
-		private int delay = 200; //얼만큼 지연할 것인가 //잠깐 wait할 때 delay를 할것이다. // 0.2초간격 200ms
+		private int delay = 200;
 		private boolean gambling = false;
 
 		public void gamble() {
-			gambling = !gambling; //흐름 조작을 하자. 호출될 때마다 한번씩 반대가 되는 것이다.
-			//마우스로 클릭하니까.
+			gambling = !gambling;
 		}
 
-		public void run() {//게임의 시작은 여기서부터.
+		public void run() {
 			int x1 = 0, x2 = 0, x3 = 0;
+			//0.2초 간격으로 난수 생성, 클라이언트 GUI에 렌더링
+			//플레이어가 클릭 시 gamble()실행하여 게임 종료
 			while(!gambling) {
-				try {//예외처리 상황을 고려해줘야함
-					x1 =(int)(Math.random()*2);//0~4   //숫자 세개를 난수로 만들어준다.
+				try {
+					x1 =(int)(Math.random()*2);
 					x2 =(int)(Math.random()*2);
 					x3 =(int)(Math.random()*2);
 
 					roomThread.broadcastGambling(x1, x2, x3, "");
 
-					sleep(delay); //슬립. 슬립하면 Interrupt발생. catch문 수행하러 이동.
+					sleep(delay);
 				} catch(InterruptedException e) {
 					return;
 				}
 			}
+			//게임 종료 결과 렌더링
 			roomThread.broadcastMiniGameEnd();
 		}
 	}
-
 
 }

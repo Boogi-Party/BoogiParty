@@ -18,6 +18,16 @@ import javax.swing.border.LineBorder;
 
 @SuppressWarnings("serial")
 public class GameGUI extends JPanel {
+	private static final ImageIcon[] gbbImage;
+
+	static {
+		gbbImage = new ImageIcon[]{
+				new ImageIcon(Main.class.getResource("/images/gawi.jpg")),
+				new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
+				new ImageIcon(Main.class.getResource("/images/bo.jpg"))
+		};
+	}
+
     Color[] playerColors = {
             new Color(173, 216, 230), // Light Blue
             new Color(152, 251, 152), // Pale Green
@@ -411,31 +421,21 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
-				for (int i = 0; i < dice; i++) {
+				for (int i = 0; i < 12; i++) {
 					move(idx);
 				}
 				offDiceNumber(dice);
 
-				boolean reachComplete = false;
-
 				if (playerIdx == idx) {
 					reachGround(idx); // 작업 수행
-					reachComplete = true; // 완료 플래그 설정
 				}
 
 				sameGround(idx);
 
-				// 쓰레드가 끝난 후 실행할 UI 코드
-				if (reachComplete) {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
-						}
-					});
-				}
 			}
 		}).start();
+
+		nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
 	}
 
 	public void move(int idx) {
@@ -566,57 +566,26 @@ public class GameGUI extends JPanel {
 	}
 
 
-  public void miniGameStart(int idx, int gameType) {
-    Player player = playerList.get(idx);
+	  public void miniGameStart(int idx, int gameType) {
+		Player player = playerList.get(idx);
 
-    if (gameType == 4) {
-        miniGame = new Map4_GBBGame(player, idx == playerIdx, parent, clientThread);
-    } else if (gameType == 8) {
-        miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent, clientThread);
-    } else if (gameType == 12) {
-        miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent);
-    }
-}
-
-public void endGame() {
-		miniGame.end();
-		for(int i=0 ;i<playerList.size(); i++) {
-			updateCoinLabel(i);
+		if (gameType == 4) {
+			miniGame = new Map4_GBBGame(player, idx == playerIdx, gbbImage, parent, clientThread);
+		} else if (gameType == 8) {
+			miniGame = new Map8_GamblingWIthThread(player, idx == playerIdx, parent, clientThread);
+		} else if (gameType == 12) {
+			miniGame = new Map12_BulletGameFrame(player, idx == playerIdx, parent, clientThread);
 		}
-		miniGame = null;
-}
+	}
 
+	public void endGame() {
+			miniGame.end();
+			for(int i=0 ;i<playerList.size(); i++) {
+				updateCoinLabel(i);
+			}
+			miniGame = null;
+	}
 
- public void endMiniGame(int idx, int gameType) {
-        Player player = playerList.get(idx);
-        String gameName = "";
-
-        // 게임 유형에 따라 이름 설정 (예: 4: 가위바위보, 8: 도박 게임, 12: 총알 게임)
-        switch (gameType) {
-            case 4:
-                gameName = "가위바위보";
-                break;
-            case 8:
-                gameName = "도박 게임";
-                break;
-            case 12:
-                gameName = "총알 게임";
-                break;
-            default:
-                gameName = "알 수 없는 게임";
-        }
-
-        // 미니게임 종료 메시지 출력
-        System.out.println("Player " + player.getName() + " has finished the mini-game: " + gameName);
-        JOptionPane.showMessageDialog(this, "Player " + player.getName() + "의 " + gameName + " 미니게임이 종료되었습니다!");
-
-        // 필요한 경우, UI 상태 업데이트
-        rollDiceButton.setEnabled(true); // 주사위 버튼 활성화
-        repaint(); // 화면 갱신
-    }
-
-  
-  
 	public void offRollingDice() {
 		rollDice = false;
 	}

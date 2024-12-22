@@ -31,9 +31,10 @@
 		@Override
 		public void end() {
 			// 결과에 따라 플레이어 코인 조정
-			if (gamePanel.getResult().equals("ME_WIN")) {
+			System.out.println(gamePanel.getResult());
+			if (gamePanel.getResult().equals(player.getName())) {
 				player.setCoin(player.getCoin() + 10);
-			} else if (gamePanel.getResult().equals("COM_WIN")) {
+			} else if (gamePanel.getResult().equals("com")) {
 				player.setCoin(player.getCoin() - 10);
 			}
 
@@ -60,9 +61,7 @@
 
 
 		//속성
-		private ImageIcon[] gbbImage = {new ImageIcon(Main.class.getResource("/images/gawi.jpg")), //image관리하는 component //이미지 3장이니까 배열. 레퍼런스 변수 선언
-								new ImageIcon(Main.class.getResource("/images/bawi.jpg")),
-								new ImageIcon(Main.class.getResource("/images/bo.jpg")) } ;
+		private ImageIcon[] gbbImage;
 				 //ctrl shift o
 		//ImageIcon playerIcon1 = new ImageIcon(client.Main.class.getResource("images/bo.jpg"));
 		private static String SAME="same!";   //static 하면 객체생성 전부터 관리할 수 있음
@@ -77,11 +76,12 @@
 		Player player;
 		ClientThread clientThread;
 		//생성자
-		public Map4_GBBGame(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread){
+		public Map4_GBBGame(Player player, boolean isPlayer, ImageIcon[] gbbImage, JFrame parentFrame, ClientThread clientThread){
 			super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌
 			this.isPlayer =	isPlayer;
 			this.player = player;
 			this.clientThread = clientThread;
+			this.gbbImage = gbbImage;
 
 			menuPanel = new MenuPanel();
 			gamePanel = new GamePanel();

@@ -161,6 +161,14 @@ public class RoomThread extends Thread {
         }
     }
 
+    public void broadcastGame12(String msg) {
+        synchronized (clients) {
+            for (UserThread user : clients) {
+                user.sendMessage(msg);
+            }
+        }
+    }
+
     public void broadcastMiniGameEnd() {
         synchronized (clients) {
             for (UserThread user : clients) {
@@ -204,7 +212,6 @@ public class RoomThread extends Thread {
             return userName;
         }
 
-        boolean isMini = false;
         @Override
         public void run() {
             try {
@@ -213,7 +220,6 @@ public class RoomThread extends Thread {
                     String[] parts = message.split("/", 4);
 
                     String command = parts[0];
-
                     if (command.equals("EXIT_ROOM")) {
                         break;
                     } else if (command.equals("START_GAME")) {
@@ -226,8 +232,6 @@ public class RoomThread extends Thread {
 
                     } else if (command.equals("ROLL_DICE")) {
                         // parts[1]: 플레이어 번호, parts[2]: 주사위 값
-                        //System.out.println("now player : " + game.getPlayerIdx());
-
                         if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
                             int dice = game.rollDice();
 
@@ -266,23 +270,12 @@ public class RoomThread extends Thread {
                                     game.game8end();
                                     break;
                                 }
-
                             }
                         }
                         else if (parts[1].equals("12")) {
                             game.game12(dis);
-                            while (true) {
-                                String s = dis.readUTF();
-                                String [] temp = s.split("/");
-                                if (temp[0].equals("MINI_GAME_END")) {
-                                    game.game8end();
-                                    break;
-                                }
-
-                            }
                         }
                     }
-
                     else {
                         broadcastMessage(userName + " : " + message); // 메시지 브로드캐스트
                     }
