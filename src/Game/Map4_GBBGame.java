@@ -31,7 +31,6 @@
 		@Override
 		public void end() {
 			// 결과에 따라 플레이어 코인 조정
-			System.out.println(gamePanel.getResult());
 			if (gamePanel.getResult().equals(player.getName())) {
 				player.setCoin(player.getCoin() + 10);
 			} else if (gamePanel.getResult().equals("com")) {
@@ -138,7 +137,7 @@
 				for (JButton gameButton : menuPanel.gbbBtn) {
 					gameButton.setEnabled(false);
 				}
-				clientThread.sendMessage("MINI_GAME_END/" + 4);
+				clientThread.sendMessage("MINI_GAME_END/" + 4 + "/" + player.getID());
 			}
 		}
 

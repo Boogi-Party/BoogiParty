@@ -64,6 +64,7 @@ public class GameGUI extends JPanel {
 
 	int numPlayer;
 	private int playerIdx;
+	private int nowPlayerIdx = 0;
 	private JButton play_backgroundMusic_Button;
 	private JButton play_actionSound_Button;
 	//public SoundEffect soundEffect; //효과음
@@ -326,7 +327,7 @@ public class GameGUI extends JPanel {
 		rollDiceButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (miniGame == null) {
+				if (miniGame == null && quiz == null) {
 					clientThread.sendMessage("ROLL_DICE/" + playerIdx);
 				}
 			}
@@ -445,10 +446,6 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
-//				for (int i = 0; i < 8; i++) {
-//					move(idx);
-//				}
-
 				for (int i = 0; i < dice; i++) {
 					move(idx);
 				}
@@ -472,7 +469,13 @@ public class GameGUI extends JPanel {
 			e.printStackTrace();
 		}
 		// 쓰레드 종료 후 실행
-		nowPlayerLabel.setIcon(imagePlayer[(idx + 1) % numPlayer]);
+		if (miniGame == null && quiz == null) {
+			increaseOrder();
+		}
+	}
+
+	public void increaseOrder() {
+		nowPlayerLabel.setIcon(imagePlayer[(nowPlayerIdx + 1) % numPlayer]);
 	}
 
 	public void move(int idx) {
@@ -492,7 +495,7 @@ public class GameGUI extends JPanel {
 		}
 
 		if (player.get_roundMap() >= 1) {
-			gameOver(idx);
+			exitGame();
 		}
 
 		playerMove(player, nextPoint);
@@ -510,7 +513,6 @@ public class GameGUI extends JPanel {
 		} else if (player.getPosition() == 8) {
 			clientThread.sendMessage("MINI_GAME/" + idx + "/8");
 		} else if (player.getPosition() == 12) {
-			player.increaseLaps();
 			clientThread.sendMessage("MINI_GAME/" + idx + "/12");
 		}
 		 else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
@@ -636,6 +638,7 @@ public class GameGUI extends JPanel {
 				updateCoinLabel(i);
 			}
 			miniGame = null;
+			increaseOrder();
 	}
 
 	public void offRollingDice() {

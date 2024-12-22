@@ -7,7 +7,6 @@ public class Player {
 	String name;
 	int use_item;
 	int roundMap;
-	int laps;
 
 	// ArrayList<String> chance;
 
@@ -17,7 +16,7 @@ public class Player {
 		position = 0;
 		this.name = name;
 		use_item = 0;
-		roundMap=0;
+		roundMap = 0;
 	}
 
 	public void increPosition(GameGUI gameGUI) {
@@ -30,15 +29,10 @@ public class Player {
 			gameGUI.updateCoinLabel(ID);
 			gameGUI.updateLapLabel(ID);
 		}
-		// position %= 16;
 	}
 
 	public void resetPosition() {
 		position = 0;
-	}
-
-	public int getLaps() {
-		return laps;
 	}
 	
 	public int getID() {
@@ -58,10 +52,6 @@ public class Player {
 	public int setPosition(int point) {
 		position = point;
 		return position;
-	}
-
-	public void increaseLaps() {
-		laps++;
 	}
 	
 	public String getName() {

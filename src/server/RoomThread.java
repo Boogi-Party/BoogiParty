@@ -179,6 +179,7 @@ public class RoomThread extends Thread {
 
     public void broadcastQuizOver(String msg) {
         synchronized (clients) {
+            //QUIZ_OVER/CORRECT/answer/
             for (UserThread user : clients) {
                 user.sendMessage("QUIZ_OVER/" + msg);
             }

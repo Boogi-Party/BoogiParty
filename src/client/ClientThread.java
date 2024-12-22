@@ -145,8 +145,6 @@ public class ClientThread extends Thread {
                     gameGUI.quizStart(Integer.parseInt(parts[1]), parts[2]);
                 }
                 else if ("QUIZ_OVER".equals(command)) {
-                    System.out.println(parts.length);
-                    sendMessage("QUIZ_OVER");
                     String msg = parts[1] + "/" + parts[2];
                     if (parts.length == 4) {
                         msg += "/" + parts[3];
