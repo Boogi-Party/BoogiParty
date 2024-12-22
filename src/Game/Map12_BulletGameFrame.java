@@ -18,6 +18,7 @@ public class Map12_BulletGameFrame extends JFrame implements MiniGame {
 	private int shotCount = 0;
 
 	public Map12_BulletGameFrame(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread) {
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.player = player;
 		this.isPlayer = isPlayer;
 		this.clientThread = clientThread;

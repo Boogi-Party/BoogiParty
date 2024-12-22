@@ -210,6 +210,14 @@ public class RoomThread extends Thread {
         }
     }
 
+    public void broadcastItemUse(String idx, String itemType) {
+        synchronized (clients) {
+            for (UserThread userThread : clients) {
+                userThread.sendMessage("ITEM_USE/" + idx + "/" + itemType);
+            }
+        }
+    }
+
     private void closeRoom() {
         isRoomActive = false;
         synchronized (clients) {
@@ -265,11 +273,10 @@ public class RoomThread extends Thread {
 
                     } else if (command.equals("ROLL_DICE")) {
                         // parts[1]: 플레이어 번호, parts[2]: 주사위 값
-                        if (game.getPlayerIdx() == Integer.parseInt(parts[1]) && !game.getIsMiniGameRunning()) {
-                            int dice = game.rollDice();
 
-                            broadcastRollDice(parts[1], dice); // 결과를 다른 클라이언트로 브로드캐스트
-                        }
+                        int dice = game.rollDice();
+                        broadcastRollDice(parts[1], dice); // 결과를 다른 클라이언트로 브로드캐스트
+
                     }
                     else if (command.equals("MINI_GAME")) {
                         // parts[1]: 플레이어 번호, parts[2]: 상태 (START)
@@ -318,6 +325,9 @@ public class RoomThread extends Thread {
                         String answer = game.getAnswer();
                         broadcastQuiz(quiz, answer, parts[1]);
                         game.quiz(dis, answer);
+                    }
+                    else if ("USE_ITEM".equals(command)) {
+                        broadcastItemUse(parts[1], parts[2]);
                     }
                     else if ("GAME_OVER".equals(command)) {
                         broadcastGameOver(parts[1]);

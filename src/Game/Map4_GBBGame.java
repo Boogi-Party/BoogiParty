@@ -76,7 +76,8 @@
 		ClientThread clientThread;
 		//생성자
 		public Map4_GBBGame(Player player, boolean isPlayer, ImageIcon[] gbbImage, JFrame parentFrame, ClientThread clientThread){
-			super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌
+			super("미니게임- 가위바위보"); //title만들기. super class호출해서 넘겨줌\
+			setDefaultCloseOperation(EXIT_ON_CLOSE);
 			this.isPlayer =	isPlayer;
 			this.player = player;
 			this.clientThread = clientThread;

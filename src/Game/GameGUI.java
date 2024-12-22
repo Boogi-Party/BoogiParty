@@ -86,6 +86,8 @@ public class GameGUI extends JPanel {
 		this.parent = parent;
 		this.numPlayer = numPlayer;
 		this.pointManager = new PointManager();
+		miniGame = null;
+		quiz = null;
 
 		parent.setScreenGameSize();
 		setSize(1500, 720);
@@ -211,62 +213,60 @@ public class GameGUI extends JPanel {
 		button_store.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFrame newFrame = new JFrame("상점");
-				//newFrame.setSize(400, 400);//setLocation(900, 520);
-				newFrame.setSize(400, 250);
-				newFrame.setLocation(900, 520);
-				JRadioButton radioButton1 = new JRadioButton("[ Jump +5 ] : Coin:100");
-				JRadioButton radioButton2 = new JRadioButton("[ Atack opponent!! ] : Coin:200");
+				System.out.println("nowplayer : " + nowPlayerIdx + "me : " + playerIdx);
+				if (nowPlayerIdx == playerIdx) {
+					JFrame newFrame = new JFrame("상점");
+					//newFrame.setSize(400, 400);//setLocation(900, 520);
+					newFrame.setSize(400, 250);
+					newFrame.setLocation(900, 520);
 
-				ButtonGroup group = new ButtonGroup();
-				group.add(radioButton1);
-				group.add(radioButton2);
+					JRadioButton radioButton1 = new JRadioButton("[ Jump +5 ] : Coin:100");
+					JRadioButton radioButton2 = new JRadioButton("[ Atack opponent!! ] : Coin:200");
 
-				JPanel panel = new JPanel();
-				panel.add(radioButton1);
-				panel.add(radioButton2);
+					ButtonGroup group = new ButtonGroup();
+					group.add(radioButton1);
+					group.add(radioButton2);
 
-				JButton submitButton = new JButton("Submit");
-
-				submitButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						if (radioButton1.isSelected()) {
-							Player nowPlayer = playerList.get(playerIdx);
-							if (nowPlayer.getCoin() >= 100) {
-								nowPlayer.useCoin(100);
-								JOptionPane.showMessageDialog(null,
-										"[ 아이템 사용 ]\n" + nowPlayer.getName() + "의 보유 코인 : " + nowPlayer.getCoin());
-								nowPlayer.set_use_item(1);
-							} else {
-								JOptionPane.showMessageDialog(null,
-										"[ 코인 부족 ]\n" + nowPlayer.getName() + "의 보유 코인 : " + nowPlayer.getCoin());
-							}
-
-						} else if (radioButton2.isSelected()) { // attack
-							Player nowPlayer = playerList.get(playerIdx);
-							if (nowPlayer.getCoin() >= 200) { // 200으로 수정
-								nowPlayer.useCoin(200);// 200으로 수정
-								JOptionPane.showMessageDialog(null,
-										"[ 아이템 사용 ]\n" + nowPlayer.getName() + "의 보유 코인 : " + nowPlayer.getCoin());
-								nowPlayer.set_use_item(2);
-							} else {
-								JOptionPane.showMessageDialog(null,
-										"[ 코인 부족 ]\n" + nowPlayer.getName() + "의 보유 코인 : " + nowPlayer.getCoin());
-							}
-						}
-						group.clearSelection();
-						newFrame.dispose();
+					if (playerList.get(playerIdx).getCoin() < 100) {
+						radioButton1.setEnabled(false);
 					}
-				});
-				panel.add(submitButton);
 
-				newFrame.add(panel);
-				//newFrame.setLocationRelativeTo(controller);
-				newFrame.setVisible(true);
+					if (playerList.get(playerIdx).getCoin() < 200) {
+						radioButton2.setEnabled(false);
+					}
+					JPanel panel = new JPanel();
+					panel.add(radioButton1);
+					panel.add(radioButton2);
 
+					JButton submitButton = new JButton("Submit");
+
+					submitButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if (radioButton1.isSelected()) {
+								Player nowPlayer = playerList.get(playerIdx);
+								if (nowPlayer.getCoin() >= 100) {
+									clientThread.sendMessage("USE_ITEM/" + playerIdx + "/1");
+								}
+
+							} else if (radioButton2.isSelected()) { // attack
+								Player nowPlayer = playerList.get(playerIdx);
+								if (nowPlayer.getCoin() >= 200) { // 200으로 수정
+									clientThread.sendMessage("USE_ITEM/" + playerIdx + "/2");
+								}
+							}
+							group.clearSelection();
+							newFrame.dispose();
+						}
+					});
+					panel.add(submitButton);
+
+					newFrame.add(panel);
+					//newFrame.setLocationRelativeTo(controller);
+					newFrame.setVisible(true);
+
+				}
 			}
-
 		});
 
 		extraPanel.add(button_store);
@@ -327,7 +327,7 @@ public class GameGUI extends JPanel {
 		rollDiceButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (miniGame == null && quiz == null) {
+				if (miniGame == null && quiz == null && nowPlayerIdx == playerIdx) {
 					clientThread.sendMessage("ROLL_DICE/" + playerIdx);
 				}
 			}
@@ -431,7 +431,7 @@ public class GameGUI extends JPanel {
 
 	//주사위 굴러가는스레드
 	public void rollDiceMotion(int idx, int dice) {
-		Thread diceThread = new Thread(new Runnable() {
+		Thread DiceThread = new Thread(new Runnable() {
 			public void run() {
 				rollDice = true;
 				rollDiceButton.setVisible(false);
@@ -452,30 +452,18 @@ public class GameGUI extends JPanel {
 
 				offDiceNumber(dice);
 
-				if (playerIdx == idx) {
-					reachGround(idx);
-				}
+				reachGround(idx);
 
 				sameGround(idx);
 			}
 		});
-		// 쓰레드 실행
-		diceThread.start();
-
-		// 쓰레드가 끝날 때까지 대기
-		try {
-			diceThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		// 쓰레드 종료 후 실행
-		if (miniGame == null && quiz == null) {
-			increaseOrder();
-		}
+		DiceThread.start();
 	}
 
 	public void increaseOrder() {
-		nowPlayerLabel.setIcon(imagePlayer[(nowPlayerIdx + 1) % numPlayer]);
+		nowPlayerIdx++;
+		nowPlayerIdx %= numPlayer;
+		nowPlayerLabel.setIcon(imagePlayer[nowPlayerIdx]);
 	}
 
 	public void move(int idx) {
@@ -509,15 +497,25 @@ public class GameGUI extends JPanel {
 	public void reachGround(int idx) {
 		Player player = playerList.get(idx);
 		if (player.getPosition() == 4) {
-			clientThread.sendMessage("MINI_GAME/" + idx + "/4");
+			if (idx == playerIdx) {
+				clientThread.sendMessage("MINI_GAME/" + idx + "/4");
+			}
 		} else if (player.getPosition() == 8) {
-			clientThread.sendMessage("MINI_GAME/" + idx + "/8");
+			if (idx == playerIdx) {
+				clientThread.sendMessage("MINI_GAME/" + idx + "/8");
+			}
 		} else if (player.getPosition() == 12) {
-			clientThread.sendMessage("MINI_GAME/" + idx + "/12");
+			if (idx == playerIdx) {
+				clientThread.sendMessage("MINI_GAME/" + idx + "/12");
+			}
+		} else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
+					|| player.getPosition() == 14) {
+			if (idx == playerIdx) {
+				clientThread.sendMessage("QUIZ/" + idx);
+			}
 		}
-		 else if (player.getPosition() == 2 || player.getPosition() == 6 || player.getPosition() == 10
-				|| player.getPosition() == 14) {
-			 clientThread.sendMessage("QUIZ/" + idx);
+		else {
+			increaseOrder();
 		}
 	}
 
@@ -556,31 +554,23 @@ public class GameGUI extends JPanel {
 	}
 
 
-	public void Item_plus_move(Player player) {
-		int ID = player.getID();
-		int current_Position = player.getPosition();
-		Point catchMove2 = pointManager.getPlayerPoint(ID, current_Position);
-
-		for (int i = 0; i < 10; i++) {
-			Point interPoint = new Point((catchMove2.x - (i * 10)), (catchMove2.y - (i * 10)));
-			try {
-				playerMove(player, interPoint);
-				Thread.sleep(20);
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
-		}
-		Point plusPoint = pointManager.getPlayerPoint(ID, player.item_plus_Position());
-		playerMove(player, plusPoint);
+	public void item_plus_move(int idx) {
+		Player player = playerList.get(idx);
+		player.setCoin(player.getCoin() - 100);
+		updateCoinLabel(idx);
+		rollDiceMotion(idx, 5);
 	}
 
-	//Item_attack_move
-	public void Item_attack_move(Player player) {
+	public void item_attack_move(int idx) {
 		int max=0;
 		int maxPlayerIdx = 0;
 
+		Player player = playerList.get(idx);
+		player.setCoin(player.getCoin() - 200);
+		updateCoinLabel(idx);
+
 		for(int i = 0; i < numPlayer ; i++) { // 플레이어 수 만큼 반복
-			if(playerIdx != i) { // 만약 i가 현재 플레이어의 인덱스를 지칭하는 게 아닐 경우
+			if(idx != i) { // 만약 i가 현재 플레이어의 인덱스를 지칭하는 게 아닐 경우
 				if(max < playerList.get(i).getPosition()) {
 					max = playerList.get(i).getPosition();
 					maxPlayerIdx = i;
@@ -605,6 +595,7 @@ public class GameGUI extends JPanel {
 		Point jumpPoint = pointManager.getPlayerPoint(ID, max);
 		playerMove(player, jumpPoint);
 		overlap_move(playerList.get(maxPlayerIdx));
+		increaseOrder();
 	}
 
 
@@ -625,6 +616,7 @@ public class GameGUI extends JPanel {
 	}
 
 	public void endQuiz(String msg) {
+		increaseOrder();
 		quiz.end(msg);
 		for(int i=0 ;i<playerList.size(); i++) {
 			updateCoinLabel(i);
@@ -633,12 +625,12 @@ public class GameGUI extends JPanel {
 	}
 
 	public void endGame() {
+			increaseOrder();
 			miniGame.end();
 			for(int i=0 ;i<playerList.size(); i++) {
 				updateCoinLabel(i);
 			}
 			miniGame = null;
-			increaseOrder();
 	}
 
 	public void offRollingDice() {

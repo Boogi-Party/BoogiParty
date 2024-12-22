@@ -151,6 +151,14 @@ public class ClientThread extends Thread {
                     }
                     gameGUI.endQuiz(msg);
                 }
+                else if ("ITEM_USE".equals(command)) {
+                    if (parts[2].equals("1")) {
+                        gameGUI.item_plus_move(Integer.parseInt(parts[1]));
+                    }
+                    else if (parts[2].equals("2")) {
+                        gameGUI.item_attack_move(Integer.parseInt(parts[1]));
+                    }
+                }
                 else {
                     waitingRoom.appendText(message); // 일반 메시지 출력
                 }

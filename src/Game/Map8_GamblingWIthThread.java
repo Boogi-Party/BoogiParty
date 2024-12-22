@@ -64,6 +64,7 @@ public class Map8_GamblingWIthThread extends JFrame implements MiniGame{
 
 	public Map8_GamblingWIthThread(Player player, boolean isPlayer, JFrame parentFrame, ClientThread clientThread) { //생성자.
 		super("미니게임- 도전 겜블링");
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.player = player;
 		this.isPlayer = isPlayer;
 		this.clientThread = clientThread;
