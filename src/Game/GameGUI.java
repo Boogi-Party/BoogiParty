@@ -26,7 +26,7 @@ public class GameGUI extends JPanel {
     };
 
     private Image screenImage;
-    private Image background = new ImageIcon(Main.class.getResource("/images/Board/board.png")).getImage();
+    private Image background = new ImageIcon(Main.class.getResource("/images/Board/board7.png")).getImage();
     private Image rollingDice = new ImageIcon(Main.class.getResource("/images/rollingDice_3.gif")).getImage();
     private ImageIcon[] imagePlayer;
 
