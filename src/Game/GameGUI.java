@@ -12,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 
 import javax.sound.sampled.Clip;
 import javax.swing.*;
@@ -124,7 +123,9 @@ public class GameGUI extends JPanel {
 			updateID_Label(i);
 
 			JLabel playerCoinLabel = new JLabel();
-			playerCoinLabel.setBounds(100, 50, 80, 20);
+//			playerCoinLabel.setBounds(100, 50, 80, 20);
+			playerCoinLabel.setBounds(100, 50, 100, 20);
+
 			playerCoinLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
 			playerCoinLabel.setText("0");
 			playerCoin.add(playerCoinLabel);
@@ -162,7 +163,6 @@ public class GameGUI extends JPanel {
 			add(playerBubble); // 기존 컴포넌트 위에 추가
 			setComponentZOrder(playerBubble, 0); // 말풍선이 다른 컴포넌트들 위로 오도록 설정
 		}
-
 
 		extraPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 
@@ -285,7 +285,9 @@ public class GameGUI extends JPanel {
 		diceNumber = new JLabel[6];
 		for (int i = 0; i < 6; i++) {
 			diceNumber[i] = new JLabel(new ImageIcon(Main.class.getResource("/images/Board/dice" + (i + 1) + ".png")));
-			diceNumber[i].setBounds(540, 240, 200, 220);
+//			diceNumber[i].setBounds(540, 240, 200, 220);
+			diceNumber[i].setBounds(540, 190, 200, 220);
+
 			diceNumber[i].setVisible(false);
 			add(diceNumber[i]);
 		}
@@ -312,7 +314,9 @@ public class GameGUI extends JPanel {
 		}
 
 		rollDiceButton = new JButton();
-		rollDiceButton.setBounds(540, 240, 200, 176);
+//		rollDiceButton.setBounds(540, 240, 200, 176);
+		rollDiceButton.setBounds(540, 190, 200, 176);
+
 		rollDiceButton.setBorderPainted(false);
 		rollDiceButton.setContentAreaFilled(false);
 		rollDiceButton.setFocusPainted(false);
@@ -441,13 +445,18 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
+//				for (int i = 0; i < 8; i++) {
+//					move(idx);
+//				}
+
 				for (int i = 0; i < dice; i++) {
 					move(idx);
 				}
+
 				offDiceNumber(dice);
 
 				if (playerIdx == idx) {
-					reachGround(idx); // 작업 수행
+					reachGround(idx);
 				}
 
 				sameGround(idx);
@@ -653,9 +662,13 @@ public class GameGUI extends JPanel {
 	}
 
 	public void screenDraw(Graphics2D g) {
-		g.drawImage(background, 0, 0, null);
+//		g.drawImage(background, 0, 0, null);
+		g.drawImage(background, 0, -50, null);
+
 		if (rollDice)
-			g.drawImage(rollingDice, 540, 220, null);
+//			g.drawImage(rollingDice, 540, 220, null);
+			g.drawImage(rollingDice, 540, 170, null);
+
 		paintComponents(g);
 		repaint();
 	}

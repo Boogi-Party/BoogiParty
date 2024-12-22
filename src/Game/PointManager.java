@@ -6,6 +6,7 @@ import java.awt.Point;
 class  PointManager {
 	
 	Point[][] playerPoint;
+	int yOffset = -40; // 맵을 위로 이동시키는 y 오프셋
 	
 	int[] coordVal = { 667, 531, 535, 511, 445, 459, 368, 408, 283, 343, 324, 264, 403, 212, 483, 161, 604, 108, 732,
 			135, 816, 186, 896, 235, 980, 299, 943, 378, 860, 430, 744, 482, 
@@ -29,13 +30,19 @@ class  PointManager {
 		playerPoint = new Point[4][16];
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 16; j++) {
-				playerPoint[i][j] = new Point(coordVal[i * 32 + j * 2], coordVal[i * 32 + j * 2 + 1]);
+				int x = coordVal[i * 32 + j * 2];
+				int y = coordVal[i * 32 + j * 2 + 1] + yOffset; // y 오프셋 추가
+				playerPoint[i][j] = new Point(x, y);
+//				playerPoint[i][j] = new Point(coordVal[i * 32 + j * 2], coordVal[i * 32 + j * 2 + 1]);
 			}
 		}
 	}
 
 	Point getPlayerPoint(int playerNum, int position) {
-		return playerPoint[playerNum][position];
+
+		Point originalPoint = playerPoint[playerNum][position];
+		return new Point(originalPoint.x, originalPoint.y + yOffset);
+//		return playerPoint[playerNum][position];
 	}
 
 }
