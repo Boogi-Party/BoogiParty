@@ -415,9 +415,14 @@ public class GameGUI extends JPanel {
 				offRollingDice();
 				onDiceNumber(dice);
 
-				for (int i = 0; i < 8; i++) {
+//				for (int i = 0; i < 8; i++) {
+//					move(idx);
+//				}
+
+				for (int i = 0; i < dice; i++) {
 					move(idx);
 				}
+
 				offDiceNumber(dice);
 
 				if (playerIdx == idx) {
