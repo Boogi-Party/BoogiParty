@@ -44,9 +44,7 @@ public class Game  {
 
 	public int rollDice() {
 		dice = new Random().nextInt(6) + 1;
-		//dice = 4;
 		playerIdx = (playerIdx + 1) % numPlayer;
-		//System.out.println("Player updated : " + playerIdx);
 		return dice;
 	}
 
@@ -83,7 +81,6 @@ public class Game  {
 		gt = new GamblingThread(); //세번째 속성으로 th객체 만듦.
 		gt.start();
 	}
-
 
 	public void game8end() {
 		gt.gamble();
