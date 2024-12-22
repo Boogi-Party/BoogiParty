@@ -109,7 +109,9 @@ public class GameGUI extends JPanel {
 
 
 			JLabel playerCoinLabel = new JLabel();
-			playerCoinLabel.setBounds(100, 50, 80, 20);
+//			playerCoinLabel.setBounds(100, 50, 80, 20);
+			playerCoinLabel.setBounds(100, 50, 100, 20);
+
 			playerCoinLabel.setFont(new Font("CookieRun BLACK", Font.BOLD, 14));
 			playerCoinLabel.setText("0");
 			playerCoin.add(playerCoinLabel);
@@ -259,7 +261,9 @@ public class GameGUI extends JPanel {
 		diceNumber = new JLabel[6];
 		for (int i = 0; i < 6; i++) {
 			diceNumber[i] = new JLabel(new ImageIcon(Main.class.getResource("/images/Board/dice" + (i + 1) + ".png")));
-			diceNumber[i].setBounds(540, 240, 200, 220);
+//			diceNumber[i].setBounds(540, 240, 200, 220);
+			diceNumber[i].setBounds(540, 190, 200, 220);
+
 			diceNumber[i].setVisible(false);
 			add(diceNumber[i]);
 		}
@@ -286,7 +290,9 @@ public class GameGUI extends JPanel {
 		}
 
 		rollDiceButton = new JButton();
-		rollDiceButton.setBounds(540, 240, 200, 176);
+//		rollDiceButton.setBounds(540, 240, 200, 176);
+		rollDiceButton.setBounds(540, 190, 200, 176);
+
 		rollDiceButton.setBorderPainted(false);
 		rollDiceButton.setContentAreaFilled(false);
 		rollDiceButton.setFocusPainted(false);
@@ -636,21 +642,16 @@ public void endGame() {
 	}
 
 	public void screenDraw(Graphics2D g) {
-		g.drawImage(background, 0, 0, null);
+//		g.drawImage(background, 0, 0, null);
+		g.drawImage(background, 0, -50, null);
+
 		if (rollDice)
-			g.drawImage(rollingDice, 540, 220, null);
+//			g.drawImage(rollingDice, 540, 220, null);
+			g.drawImage(rollingDice, 540, 170, null);
+
 		paintComponents(g);
 		repaint();
 	}
 
-    
-
- 
-
-          
-
-
-
-   
 
 }

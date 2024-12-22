@@ -59,7 +59,11 @@ public class Main extends JFrame {
 	}
 	public void setScreenGameSize() {
 		setLayout(null);
-		setSize(1500, 720);
+//		setSize(1500, 720);
+//		setSize(1500, 620);
+		setSize(1500, 590);
+
+
 	}
 
 	public void setScreenNotGameSize() {
