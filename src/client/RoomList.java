@@ -1,5 +1,4 @@
 package client;
-//src/client/RoomList.java
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,14 +21,26 @@ public class RoomList extends JPanel {
         this.nickname = nickname;
         this.parent = parent;
 
-        // 메인 레이아웃 설정
+        // 배경 패널 추가
         setLayout(new BorderLayout());
+        BackgroundPanel backgroundPanel = new BackgroundPanel();
+        backgroundPanel.setLayout(new BorderLayout());
+        add(backgroundPanel, BorderLayout.CENTER);
 
         // 왼쪽: 방 목록
         roomListPanel = new JPanel();
         roomListPanel.setLayout(new BoxLayout(roomListPanel, BoxLayout.Y_AXIS));
-        JScrollPane scrollPane = new JScrollPane(roomListPanel);
-        add(scrollPane, BorderLayout.CENTER);
+        roomListPanel.setOpaque(false); // 투명하게 설정
+
+        // 반투명 배경 패널 추가
+        JPanel roomListBackground = new JPanel(new BorderLayout());
+        roomListBackground.setBackground(new Color(0, 0, 0, 100)); // 검정색 반투명
+        roomListBackground.add(roomListPanel, BorderLayout.CENTER);
+
+        JScrollPane scrollPane = new JScrollPane(roomListBackground);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        backgroundPanel.add(scrollPane, BorderLayout.CENTER);
 
         // 방 목록 초기화
         fetchRooms();
@@ -38,6 +49,7 @@ public class RoomList extends JPanel {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setPreferredSize(new Dimension(200, getHeight()));
+        rightPanel.setBackground(new Color(0, 0, 0, 100)); // 반투명한 배경 설정
 
         JButton createRoomButton = new JButton("방 만들기");
         createRoomButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -51,6 +63,7 @@ public class RoomList extends JPanel {
         JLabel nicknameLabel = new JLabel("닉네임: " + nickname);
         nicknameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         nicknameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        nicknameLabel.setForeground(Color.WHITE); // 텍스트 색상을 흰색으로 설정
 
         JButton refreshButton = new JButton("새로고침");
         refreshButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -61,14 +74,13 @@ public class RoomList extends JPanel {
             }
         });
 
-
         rightPanel.add(Box.createVerticalStrut(20));
         rightPanel.add(createRoomButton);
         rightPanel.add(Box.createVerticalStrut(20));
         rightPanel.add(nicknameLabel);
         rightPanel.add(Box.createVerticalStrut(20));
         rightPanel.add(refreshButton);
-        add(rightPanel, BorderLayout.EAST);
+        backgroundPanel.add(rightPanel, BorderLayout.EAST);
     }
 
     private void fetchRooms() {
@@ -115,16 +127,20 @@ public class RoomList extends JPanel {
         JPanel roomPanel = new JPanel(new BorderLayout());
         roomPanel.setPreferredSize(new Dimension(600, 50));
         roomPanel.setMaximumSize(new Dimension(600, 50));
-        roomPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        roomPanel.setOpaque(false); // 투명하게 설정
+        roomPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
 
         JLabel roomLabel = new JLabel(roomInfo);
         roomLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         roomLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        roomLabel.setForeground(Color.WHITE); // 텍스트 색상을 흰색으로 설정
 
         roomPanel.add(roomLabel, BorderLayout.CENTER);
 
         JButton joinButton = new JButton("Join");
         joinButton.setFont(new Font("Arial", Font.BOLD, 14));
+        joinButton.setBackground(new Color(30, 144, 255)); // 배경색 설정
+//        joinButton.setFocusPainted(false); // 포커스 테두리 비활성화
         joinButton.addActionListener(e -> joinGame(roomInfo)); // Join 이벤트 연결
         roomPanel.add(joinButton, BorderLayout.EAST);
         return roomPanel;
@@ -145,7 +161,6 @@ public class RoomList extends JPanel {
             WaitingRoom waitingRoom = new WaitingRoom(nickname, extractPortFromResponse(response), parent);
             // 화면 전환
             parent.setPanel(waitingRoom);
-
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Unable to connect to the server.", "Connection Error", JOptionPane.ERROR_MESSAGE);
@@ -177,5 +192,22 @@ public class RoomList extends JPanel {
             }
         }
         throw new IllegalArgumentException("Invalid response format: " + response);
+    }
+
+    // 배경 패널 클래스
+    class BackgroundPanel extends JPanel {
+        private Image background;
+
+        public BackgroundPanel() {
+            background = new ImageIcon(Main.class.getResource("/images/startBackground0.png")).getImage();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (background != null) {
+                g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+            }
+        }
     }
 }
