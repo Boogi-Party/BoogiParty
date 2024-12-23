@@ -350,7 +350,7 @@ public class GameGUI extends JPanel {
 // 채팅 입력 필드 추가 (화면 하단 중앙)
 		chatInput = new JTextField();
 //		chatInput.setBounds(490, 640, 300, 30);  // 위치 및 크기 설정
-		chatInput.setBounds(490, 140, 300, 30);  // 위치 및 크기 설정
+		chatInput.setBounds(890, 490, 300, 30);  // 위치 및 크기 설정
 
 		add(chatInput);
 
