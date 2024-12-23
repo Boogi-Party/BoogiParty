@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class RoomList extends JPanel {
+public class RoomList extends JPanel implements MyPanel {
     private ArrayList<String> rooms = new ArrayList<>();
     private String nickname;
     private JPanel roomListPanel; // 방 목록을 표시할 패널
@@ -216,6 +216,11 @@ public class RoomList extends JPanel {
             }
         }
         throw new IllegalArgumentException("Invalid response format: " + response);
+    }
+
+    @Override
+    public void exitRoom() {
+
     }
 
     // 배경 패널 클래스

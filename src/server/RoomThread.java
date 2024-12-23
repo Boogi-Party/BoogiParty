@@ -360,6 +360,17 @@ public class RoomThread extends Thread {
             } finally {
                 broadcastMessage(userName + "님이 퇴장하셨습니다."); // 입장 메시지만 보내기
                 closeConnection();
+                clients.remove(this);
+                readyStates.remove(userName);
+                if (hostname.equals(userName)) {
+                    hostname = clients.get(0).getUserName();
+
+                    for(UserThread user : clients) {
+                        user.sendMessage("NEW_HOST/" + hostname);
+                    }
+                }
+
+                broadcastUserList();
             }
         }
 

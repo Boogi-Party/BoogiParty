@@ -7,9 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 
-public class WaitingRoom extends JPanel {
+import static com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener;
+
+public class WaitingRoom extends JPanel implements MyPanel {
     private String nickname;
     protected ArrayList<JLabel> usernames = new ArrayList<>();
     protected JTextArea chatArea;
@@ -37,6 +41,7 @@ public class WaitingRoom extends JPanel {
         parent.setScreenNotGameSize();
         setLayout(new BorderLayout());
 
+        //생성자에서 UI 설정 + 이벤트 리스너 설정
         // 메인 패널
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayout(1, 2)); // 1행 2열 레이아웃
@@ -119,8 +124,6 @@ public class WaitingRoom extends JPanel {
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // 버튼 중앙 정렬
         buttonPanel.setPreferredSize(new Dimension(0, 50)); // 높이 조정
 
-
-
         // 버튼 패널을 inputPanel의 SOUTH에 추가
         inputPanel.add(buttonPanel, BorderLayout.SOUTH);
         inputPanel.add(chatInputField, BorderLayout.CENTER); // 텍스트 필드
@@ -132,6 +135,13 @@ public class WaitingRoom extends JPanel {
         clientThread.connectToServer();
 
         updateButtonPanel();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                clientThread.closeConnection();
+            }
+        });
         // 화면 표시
         //setVisible(true);
     }
@@ -191,7 +201,8 @@ public class WaitingRoom extends JPanel {
         clientThread.sendMessage("READY_STATE/" + nickname + "/" + (isReady ? "READY" : "NOT_READY"));
     }
 
-    private void exitRoom() {
+    @Override
+    public void exitRoom() {
         try {
             // 클라이언트 스레드 종료
             synchronized (this) {
