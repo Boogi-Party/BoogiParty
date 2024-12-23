@@ -203,8 +203,12 @@ public class GameGUI extends JPanel {
 
 		extraPanel.setLayout(null); // 배치관리자를 null로 설정
 		button_store.setBounds(10, 10, 200, 30); // x, y, width, height
-		play_backgroundMusic_Button.setBounds(10, 100, 200, 30);
-		play_actionSound_Button.setBounds(10, 150, 200, 30);
+//		play_backgroundMusic_Button.setBounds(10, 100, 200, 30);
+		play_backgroundMusic_Button.setBounds(10, 50, 200, 30);
+
+//		play_actionSound_Button.setBounds(10, 150, 200, 30);
+		play_actionSound_Button.setBounds(10, 90, 200, 30);
+
 
 		extraPanel.add(button_store);
 		extraPanel.add(play_backgroundMusic_Button);
@@ -299,6 +303,7 @@ public class GameGUI extends JPanel {
 		nowPlayerLabel = new JLabel(imagePlayer[0]);
 		nowPlayerLabel.setLocation(0, 10);
 		nowPlayerLabel.setSize(50, 50);
+
 		nowPlayerLabel.setVisible(false);
 		add(nowPlayerLabel);
 		nowPlayerLabel.setVisible(true);
