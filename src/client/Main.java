@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Main extends JFrame {
 	public static final int SCREEN_WIDTH = 1500;
 	public static final int SCREEN_HEIGHT = 720;
-	JPanel screen;
+	MyPanel screen;
 	String nickname;
 
 	private String background_music = "src/audio/music.wav";
@@ -38,16 +38,17 @@ public class Main extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				// JFrame이 닫힐 때 서버에 삭제 요청 전송
 				sendDeleteRequestToServer(nickname);
+				screen.exitRoom();
 			}
 		});
 
 		setVisible(true);
 	}
 
-	public void setPanel(JPanel jPanel) {
+	public void setPanel(MyPanel jPanel) {
 		getContentPane().removeAll(); // 기존 패널 제거
 		this.screen = jPanel;
-		getContentPane().add(screen, BorderLayout.CENTER); // 중앙에 패널 추가
+		getContentPane().add((Component) screen, BorderLayout.CENTER); // 중앙에 패널 추가
 
 		// UI 갱신
 		revalidate();

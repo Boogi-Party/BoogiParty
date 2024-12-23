@@ -1,10 +1,7 @@
 //src/Game/GameGUI.java
 package Game;
 
-import client.ClientThread;
-import client.Main;
-import client.PlayMusic;
-import client.WaitingRoom;
+import client.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -18,7 +15,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 @SuppressWarnings("serial")
-public class GameGUI extends JPanel {
+public class GameGUI extends JPanel implements MyPanel {
 	private static final ImageIcon[] gbbImage;
 
 	static {
@@ -712,4 +709,8 @@ public class GameGUI extends JPanel {
 	}
 
 
+	@Override
+	public void exitRoom() {
+
+	}
 }

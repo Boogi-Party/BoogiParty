@@ -8,12 +8,12 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Menu extends JPanel {
+public class Menu extends JPanel implements MyPanel {
     private JTextField nicknameField;
     private String nickname;
     Main parent;
 
-    public Menu(Main main) {
+    public Menu(Main main)  {
         this.parent = main;
 
         // 프레임 설정
@@ -124,6 +124,11 @@ public class Menu extends JPanel {
         parent.setPanel(roomList);
         revalidate();
         repaint();
+    }
+
+    @Override
+    public void exitRoom() {
+
     }
 
     // 배경 패널 클래스

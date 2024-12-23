@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class RoomList extends JPanel {
+public class RoomList extends JPanel implements MyPanel {
     private ArrayList<String> rooms = new ArrayList<>();
     private String nickname;
     private JPanel roomListPanel; // 방 목록을 표시할 패널
@@ -190,15 +190,17 @@ public class RoomList extends JPanel {
         try {
             fetchRooms();
             // Room ID를 추출
-            System.out.println(rooms);
             int roomId = Integer.parseInt(roomInfo.split(",")[0].split(":")[1].trim());
 
             // 포트 번호 계산 (9500 + Room ID)
             int roomPort = 9500 + roomId;
             for (String room : rooms) {
+                System.out.println(room);
                 if (Integer.parseInt(room.split(",")[0].split(":")[1].trim()) == roomPort - 9500) {
                     // WaitingRoom 화면으로 전환
-                    parent.setPanel(new WaitingRoom(nickname, roomPort, parent));
+                    if (Integer.parseInt(room.split(",")[2].split(":")[1].trim()) <= 3) {
+                        parent.setPanel(new WaitingRoom(nickname, roomPort, parent));
+                    }
                 }
             }
 
@@ -216,6 +218,11 @@ public class RoomList extends JPanel {
             }
         }
         throw new IllegalArgumentException("Invalid response format: " + response);
+    }
+
+    @Override
+    public void exitRoom() {
+
     }
 
     // 배경 패널 클래스
