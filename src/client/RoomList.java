@@ -1,5 +1,7 @@
 package client;
 
+import server.RoomThread;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -92,7 +94,6 @@ public class RoomList extends JPanel {
 
             out.println("GET_ROOM");
             String response = in.readLine();
-            System.out.println(response);
 
             String [] lists = response.split("/");
 
@@ -113,7 +114,6 @@ public class RoomList extends JPanel {
     private void updateRoomList() {
         roomListPanel.removeAll(); // 기존의 모든 컴포넌트를 삭제
 
-        System.out.println(rooms.size());
 
         // 방이 없는 경우
         if (rooms.isEmpty()) {
@@ -188,14 +188,20 @@ public class RoomList extends JPanel {
 
     private void joinGame(String roomInfo) {
         try {
+            fetchRooms();
             // Room ID를 추출
+            System.out.println(rooms);
             int roomId = Integer.parseInt(roomInfo.split(",")[0].split(":")[1].trim());
 
             // 포트 번호 계산 (9500 + Room ID)
             int roomPort = 9500 + roomId;
+            for (String room : rooms) {
+                if (Integer.parseInt(room.split(",")[0].split(":")[1].trim()) == roomPort - 9500) {
+                    // WaitingRoom 화면으로 전환
+                    parent.setPanel(new WaitingRoom(nickname, roomPort, parent));
+                }
+            }
 
-            // WaitingRoom 화면으로 전환
-            parent.setPanel(new WaitingRoom(nickname, roomPort, parent));
 
         } catch (Exception e) {
             fetchRooms();

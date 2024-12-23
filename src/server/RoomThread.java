@@ -76,6 +76,7 @@ public class RoomThread extends Thread {
         synchronized (clients) {
             StringBuilder userListBuilder = new StringBuilder("USER_UPDATE/");
             for (UserThread user : clients) {
+                System.out.println(user.getUserName());
                 userListBuilder.append(user.getUserName()).append(",");
             }
             if (!clients.isEmpty()) {
@@ -84,10 +85,6 @@ public class RoomThread extends Thread {
 
             for (UserThread user : clients) {
                 user.sendMessage(userListBuilder.toString());
-            }
-
-            if (hostname == null && !clients.isEmpty()) {
-                hostname = clients.get(0).getUserName(); // 첫 번째 유저를 방장으로 지정
             }
         }
     }
@@ -262,8 +259,19 @@ public class RoomThread extends Thread {
 
                     String command = parts[0];
                     if (command.equals("EXIT_ROOM")) {
+                        if (hostname.equals(parts[1])) {
+                            clients.remove(this);
+                            hostname = clients.get(0).getUserName();
+
+                            for(UserThread user : clients) {
+                                user.sendMessage("NEW_HOST/" + hostname);
+                            }
+                        }
+                        clients.remove(this);
+                        broadcastUserList();
                         break;
-                    } else if (command.equals("START_GAME")) {
+                    }
+                    else if (command.equals("START_GAME")) {
                         broadcastGameStart(); // 모든 클라이언트에 게임 시작 명령
                     } else if (command.equals("READY_STATE")) {
 //                        if (parts.length == 3) {
@@ -354,17 +362,6 @@ public class RoomThread extends Thread {
             }
         }
 
-
-        private void updateHost() {
-            synchronized (clients) {
-                String fullMessage = "NEW_HOST/" + hostname;
-                broadcastUserList();
-                for (UserThread user : clients) {
-                    user.sendMessage(fullMessage); // 메시지를 각 클라이언트에 전송
-                }
-            }
-        }
-
         private void broadcastMessage(String message) {
             synchronized (clients) {
                 String fullMessage = "USER_MSG/" + message;
@@ -384,18 +381,8 @@ public class RoomThread extends Thread {
         public void closeConnection() {
             synchronized (clients) {
                 clients.remove(this); // 현재 유저 제거
-                broadcastUserList();
-
                 // 방장이 나간 경우 새로운 방장 설정
-                if (this.userName.equals(hostname)) {
-                    if (!clients.isEmpty()) {
-                        hostname = clients.get(0).getUserName(); // 남은 첫 번째 유저를 방장으로 지정
-                        updateHost();
-                        broadcastUserList();
-                    } else {
-                        hostname = null; // 모든 유저가 나간 경우
-                    }
-                }
+
                 if (clients.isEmpty()) {
                     closeRoom(); // 방이 비었을 때 호출
                 }
