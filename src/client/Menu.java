@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class Menu extends JPanel {
     private JTextField nicknameField;
@@ -91,6 +94,31 @@ public class Menu extends JPanel {
             JOptionPane.showMessageDialog(this, "Please enter a nickname.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
+        try {
+            Socket socket = new Socket("localhost", 9999);
+
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // true는 auto-flush 활성화
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            out.println("CHECK_REDUN/" + nickname); // 요청 전송
+
+            String s = in.readLine(); // 응답 읽기
+
+            out.close();
+            in.close();
+
+            if (s.equals("TRUE")) {
+                return;
+            }
+            parent.setNickname(nickname);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         RoomList roomList = new RoomList(nickname, parent);
         parent.setPanel(roomList);
         revalidate();

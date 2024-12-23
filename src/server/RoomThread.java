@@ -358,6 +358,7 @@ public class RoomThread extends Thread {
         private void updateHost() {
             synchronized (clients) {
                 String fullMessage = "NEW_HOST/" + hostname;
+                broadcastUserList();
                 for (UserThread user : clients) {
                     user.sendMessage(fullMessage); // 메시지를 각 클라이언트에 전송
                 }
@@ -449,7 +450,6 @@ public class RoomThread extends Thread {
                 return true;
             }
         }
-
 
     }
 }

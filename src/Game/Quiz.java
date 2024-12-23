@@ -95,7 +95,7 @@ public class Quiz extends JFrame {
             player.setCoin(player.getCoin() + 50);
         }
         else {
-            message = "틀렸습니다... 정답 : " + parts[1] + "입력 :" + parts[2];
+            message = "<html><center>틀렸습니다... 정답 : " + parts[1] + "<br>" + " 입력 : " + parts[2] + "</center></html>";
             PlayMusic.play_actionSound("src/audio/QuizFail.wav");
         }
 

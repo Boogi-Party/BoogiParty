@@ -89,6 +89,7 @@ public class ClientThread extends Thread {
                 else if ("NEW_HOST".equals(command)) {
                     hostname = parts[1];
                     updateHostName();
+                    sendMessage("");
                 }
                 else if ("READY_STATE".equals(command)) {
 //                    if (parts.length == 3) {

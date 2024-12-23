@@ -91,13 +91,19 @@ public class RoomList extends JPanel {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             out.println("GET_ROOM");
-            String response;
-            while ((response = in.readLine()) != null) {
-                rooms.add(response);
+            String response = in.readLine();
+            System.out.println(response);
+
+            String [] lists = response.split("/");
+
+            for (String room : lists) {
+                if (!room.isEmpty()){
+                    rooms.add(room);
+                }
             }
+
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Unable to connect to the server.", "Connection Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+
         }
 
         // 방 목록 초기화
@@ -105,22 +111,34 @@ public class RoomList extends JPanel {
     }
 
     private void updateRoomList() {
-        roomListPanel.removeAll();
+        roomListPanel.removeAll(); // 기존의 모든 컴포넌트를 삭제
 
+        System.out.println(rooms.size());
+
+        // 방이 없는 경우
         if (rooms.isEmpty()) {
             JLabel emptyLabel = new JLabel("현재 방이 없습니다.");
-            emptyLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+            emptyLabel.setFont(new Font("Malgun Gothic", Font.PLAIN, 50));
             emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            roomListPanel.add(emptyLabel);
+            emptyLabel.setVerticalAlignment(SwingConstants.CENTER); // 세로 가운데 정렬
+            emptyLabel.setForeground(Color.WHITE); // 텍스트 색상 흰색으로 설정
+
+            emptyLabel.setVisible(true);
+
+            // 빈 화면을 정렬할 수 있도록 레이아웃 설정
+            roomListPanel.setLayout(new BorderLayout());
+            roomListPanel.add(emptyLabel, BorderLayout.CENTER); // 중앙에 배치
         } else {
+            // 방 목록이 있는 경우, 각 방을 패널에 추가
+            roomListPanel.setLayout(new BoxLayout(roomListPanel, BoxLayout.Y_AXIS)); // 세로로 배치
             for (String roomInfo : rooms) {
                 JPanel roomPanel = createRoomPanel(roomInfo);
                 roomListPanel.add(roomPanel);
             }
         }
 
-        roomListPanel.revalidate();
-        roomListPanel.repaint();
+        roomListPanel.revalidate();  // 레이아웃 다시 계산
+        roomListPanel.repaint();     // 화면 다시 그리기
     }
 
     private JPanel createRoomPanel(String roomInfo) {
