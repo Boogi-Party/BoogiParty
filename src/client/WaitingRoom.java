@@ -16,6 +16,7 @@ public class WaitingRoom extends JPanel {
     private ClientThread clientThread;
     private JTextField chatInputField;
 
+    JPanel buttonPanel;
     JPanel rightPanel;
     JPanel leftPanel;
     ArrayList<JLabel> userLabels = new ArrayList<>();
@@ -115,19 +116,10 @@ public class WaitingRoom extends JPanel {
         sendButton.addActionListener(sendMessageAction);
 
         // 버튼 패널
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // 버튼 중앙 정렬
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // 버튼 중앙 정렬
         buttonPanel.setPreferredSize(new Dimension(0, 50)); // 높이 조정
 
-        // "나가기" 버튼 추가
-        exitButton  = new JButton("나가기");
-        exitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                exitRoom();
-            }
-        });
 
-        buttonPanel.add(exitButton);
 
         // 버튼 패널을 inputPanel의 SOUTH에 추가
         inputPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -139,8 +131,24 @@ public class WaitingRoom extends JPanel {
 
         clientThread.connectToServer();
 
+        updateButtonPanel();
+        // 화면 표시
+        //setVisible(true);
+    }
 
+    public void updateButtonPanel() {
+        buttonPanel.removeAll();
         // 게임 시작 버튼 추가
+        // "나가기" 버튼 추가
+        exitButton  = new JButton("나가기");
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exitRoom();
+            }
+        });
+
+        buttonPanel.add(exitButton);
         if (hostname.equals(nickname)) {
             gameStartButton = new JButton("게임 시작");
             gameStartButton.setPreferredSize(new Dimension(100, 40));
@@ -166,9 +174,12 @@ public class WaitingRoom extends JPanel {
             buttonPanel.add(readyButton);
         }
 
-        // 화면 표시
-        //setVisible(true);
     }
+
+    public boolean getIsReady() {
+        return isReady;
+    }
+
     private void toggleReadyState() {
         isReady = !isReady;
         readyButton.setText(isReady ? "준비 해제" : "준비");
@@ -182,8 +193,6 @@ public class WaitingRoom extends JPanel {
 
     private void exitRoom() {
         try {
-            clientThread.sendMessage("UPDATE_HOST");
-
             // 클라이언트 스레드 종료
             synchronized (this) {
                 clientThread.closeConnection();
@@ -219,5 +228,9 @@ public class WaitingRoom extends JPanel {
         GameGUI gameGUI = new GameGUI(clientThread, parent, numPlayer, playerInfo, this);
         parent.setPanel(gameGUI);
         return gameGUI;
+    }
+
+    public void setHostname(String nickname) {
+        hostname = nickname;
     }
 }

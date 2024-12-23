@@ -1,5 +1,7 @@
 package server;
 //src/server/CentralServer.java
+import client.RoomList;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -7,6 +9,8 @@ import java.util.*;
 public class CentralServer {
     private static final int PORT = 9999;
     private static final ArrayList<RoomThread> rooms = new ArrayList<>();
+    private static final ArrayList<RoomList> roomlists = new ArrayList<>();
+    private static ArrayList<String> nicknames = new ArrayList<>();
     private static int count = 0;
 
     public static void main(String[] args) {
@@ -27,11 +31,13 @@ public class CentralServer {
     }
 
     private static void handleClient(Socket clientSocket) {
+        String nickname = null; // 클라이언트의 닉네임 저장
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String command = in.readLine();
-
+            String msg = in.readLine();
+            String [] parts = msg.split("/");
+            String command = parts[0];
 
             if ("CREATE_ROOM".equalsIgnoreCase(command)) {
                 String hostname = in.readLine(); // 클라이언트에서 호스트 이름 전송 받기
@@ -39,8 +45,7 @@ public class CentralServer {
                 out.println("Room Created: ID=" + roomThread.getRoomId() + ", Port=" + roomThread.getPort());
             } else if ("GET_ROOM".equalsIgnoreCase(command)) {
                 // 방 목록 요청 처리
-                String roomList = getRoomList();
-                out.println(roomList);
+                broadcastRoomList(out);
             } else if (command.startsWith("JOIN_ROOM")) {
                 // 방 참가 요청 처리
                 int roomId = Integer.parseInt(command.split(" ")[1]);
@@ -51,6 +56,17 @@ public class CentralServer {
                 int roomId = Integer.parseInt(command.split(" ")[1]);
                 removeRoom(roomId);
                 out.println("Room Removed: ID=" + roomId);
+            } else if (command.equals("CHECK_REDUN")) {
+                String checkName = parts[1];
+                nickname = checkName; // 닉네임 저장
+                if (nicknames.contains(checkName)) {
+                    out.println("TRUE");
+                } else {
+                    out.println("FALSE");
+                    nicknames.add(checkName); // 닉네임 추가
+                }
+            } else if (command.equals("REMOVE_NAME")) {
+                nicknames.remove(parts[1]);
             } else {
                 // 알 수 없는 명령어 처리
                 out.println("Unknown Command");
@@ -60,6 +76,7 @@ public class CentralServer {
             System.out.println("Client error: " + e.getMessage());
         }
     }
+
 
     private static RoomThread createRoom(String hostname) {
         RoomThread roomThread = new RoomThread(count++, CentralServer::onEmptyRoom, hostname);
@@ -79,17 +96,23 @@ public class CentralServer {
         }
     }
 
-    private static String getRoomList() {
+    private static void broadcastRoomList(PrintWriter os) {
         StringBuilder roomListBuilder = new StringBuilder();
         synchronized (rooms) {
             for (RoomThread room : rooms) {
                 roomListBuilder.append("Room ID: ").append(room.getRoomId())
                         .append(", Room Name: ").append(room.getRoomName())
                         .append(", Clients: ").append(room.getClients())
-                        .append("\n");
+                        .append("/");
             }
+
+            if (roomListBuilder.length() > 0) {
+                roomListBuilder.setLength(roomListBuilder.length() - 1);
+            }
+
+// 방 목록을 한 번에 전송
+            os.println(roomListBuilder.toString());
         }
-        return roomListBuilder.toString().trim();
     }
 
     // 방이 비었을 때 호출되는 콜백 메서드

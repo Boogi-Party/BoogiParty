@@ -44,7 +44,8 @@ public class ClientThread extends Thread {
 
             dos.writeUTF(nickname);
             hostname = dis.readUTF();
-            updateHostName();
+            waitingRoom.setHostname(hostname);
+
             // 클라이언트 쓰레드 시작
             this.start();
 
@@ -74,12 +75,13 @@ public class ClientThread extends Thread {
                 String command = parts[0];
 
                 if ("USER_UPDATE".equals(command)) {
-                    if (parts.length > 1) {
-                        String[] userNames = parts[1].split(",");
-                        updateUserPanel(userNames);
-                    } else {
-                        updateUserPanel(new String[0]);
+                    String[] userNames = parts[1].split(",");
+                    for (String name : userNames) {
+                        System.out.println(name);
+
                     }
+                    updateUserPanel(userNames);
+
                 }
                 else if ("USER_MSG".equals(command)) {
                     if (parts.length > 1) {
@@ -87,11 +89,10 @@ public class ClientThread extends Thread {
                     }
                 }
                 else if ("NEW_HOST".equals(command)) {
-                    hostname = parts[1];
-                    updateHostName();
+                        hostname = parts[1];
+                        waitingRoom.setHostname(hostname);
                 }
                 else if ("READY_STATE".equals(command)) {
-//                    if (parts.length == 3) {
                         String user = parts[1];
                         String state = parts[2];
                         boolean isReady = "READY".equalsIgnoreCase(state);
@@ -139,7 +140,7 @@ public class ClientThread extends Thread {
                     gameGUI.updateLapLabel(Integer.parseInt(parts[1]));
                 }
                 else if ("GAME_OVER".equals(command)) {
-                    gameGUI.exitGame();
+                    gameGUI.exitGame(parts[1]);
                 }
                 else if ("QUIZ".equals(command)) {
                     gameGUI.quizStart(Integer.parseInt(parts[1]), parts[2]);
@@ -196,20 +197,32 @@ public class ClientThread extends Thread {
     }
     private void updateUserPanel(String[] users) {
         SwingUtilities.invokeLater(() -> {
-            for (int i = 0; i < waitingRoom.usernames.size(); i++) {
+            for (int i = 0; i < 4; i++) {
                 if (i < users.length) {
                     if (users[i].equals(hostname)) {
                         waitingRoom.usernames.get(i).setText(users[i] + " 👑");
+                        waitingRoom.setHostname(hostname);
                     }
                     else {
-                        waitingRoom.usernames.get(i).setText(users[i]);
+                        String txt = users[i];
+                        if (waitingRoom.getIsReady()) {
+                            txt += " (준비됨)";
+                            JPanel userPanel = (JPanel) waitingRoom.leftPanel.getComponent(i);
+                            userPanel.setBackground(new Color(144, 238, 144));
+                        }
+
+                        waitingRoom.usernames.get(i).setText(txt);
+
                     }
                     // 폰트 크기 조절 (예: Nanum Gothic, 크기 16)
+                    waitingRoom.updateButtonPanel();
                     waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
                 } else {
                     waitingRoom.usernames.get(i).setText("<Empty>");
+                    JPanel userPanel = (JPanel) waitingRoom.leftPanel.getComponent(i);
+                    userPanel.setBackground(new Color(220, 220, 255));
                     // 폰트 크기 조절 (예: Nanum Gothic, 크기 16)
-//                    waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
+//                   waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
                     waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.ITALIC, 16));
 
                 }
@@ -219,8 +232,8 @@ public class ClientThread extends Thread {
     }
 
     public void closeConnection() {
+        sendMessage("EXIT_ROOM/" + nickname);
         running = false; // 쓰레드 종료 신호
-        sendMessage("EXIT_ROOM");
         cleanupResources();
     }
 
@@ -238,7 +251,4 @@ public class ClientThread extends Thread {
         this.gameGUI = waitingRoom.gameStart(numPlayer, playerInfo);
     }
 
-    private void updateHostName() {
-        waitingRoom.hostname = hostname;
-    }
 }
