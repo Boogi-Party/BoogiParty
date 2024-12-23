@@ -47,6 +47,15 @@ public class WaitingRoom extends JPanel {
         leftPanel.setBackground(new Color(200, 200, 255)); // 연한 파란색 배경
         mainPanel.add(leftPanel);
 
+        // 유저 캐릭터 이미지 경로 (예시)
+        String[] characterImagePaths = {
+                "/images/characters/character1.png",
+                "/images/characters/character2.png",
+                "/images/characters/character3.png",
+                "/images/characters/character4.png",
+                "/images/characters/default.png"
+        };
+
         // 오른쪽 패널 (채팅창 및 버튼)
         rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
@@ -58,9 +67,23 @@ public class WaitingRoom extends JPanel {
             JPanel userPanel = new JPanel();
             userPanel.setBackground(new Color(220, 220, 255)); // 연한 색
             userPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            JLabel userLabel = new JLabel("User " + i);
-            usernames.add(userLabel);
-            userPanel.add(userLabel); // 유저 이름 (추후 업데이트 가능)
+            userPanel.setLayout(new BorderLayout()); // 이미지와 텍스트 정렬을 위한 레이아웃
+
+            // 캐릭터 이미지 추가
+            JLabel characterLabel = new JLabel();
+            characterLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            characterLabel.setIcon(new ImageIcon(getClass().getResource(characterImagePaths[i]))); // 이미지 로드
+
+            // 유저 이름 추가
+            JLabel userLabel = new JLabel("User " + i, SwingConstants.CENTER);
+            usernames.add(userLabel);// 유저 이름 리스트에 추가
+
+            //userPanel.add(userLabel); // 유저 이름 (추후 업데이트 가능)
+
+            // 패널에 추가
+            userPanel.add(characterLabel, BorderLayout.CENTER); // 이미지
+            userPanel.add(userLabel, BorderLayout.NORTH); // 이름 (아래쪽)
+
             leftPanel.add(userPanel);
             userLabels.add(userLabel);
         }

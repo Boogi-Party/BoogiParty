@@ -205,8 +205,14 @@ public class ClientThread extends Thread {
                     else {
                         waitingRoom.usernames.get(i).setText(users[i]);
                     }
+                    // 폰트 크기 조절 (예: Nanum Gothic, 크기 16)
+                    waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
                 } else {
-                    waitingRoom.usernames.get(i).setText("Empty");
+                    waitingRoom.usernames.get(i).setText("<Empty>");
+                    // 폰트 크기 조절 (예: Nanum Gothic, 크기 16)
+//                    waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
+                    waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.ITALIC, 16));
+
                 }
             }
             waitingRoom.repaint();
