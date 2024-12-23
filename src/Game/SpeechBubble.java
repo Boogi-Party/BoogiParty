@@ -10,7 +10,8 @@ class SpeechBubble extends JPanel {
     public SpeechBubble(String text) {
         this.text = text;
         setOpaque(true); // 배경을 불투명하게 설정
-        this.setBackground(new Color(192,205,239));
+//        this.setBackground(new Color(192,205,239));
+        this.setBackground(new Color(128,198,207));
     }
 
     public void setText(String text) {

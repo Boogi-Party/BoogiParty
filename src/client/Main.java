@@ -28,7 +28,7 @@ public class Main extends JFrame {
 		setLayout(new BorderLayout());
 		setLocation(20, 50);
 
-		PlayMusic.load_backgroundAudio(background_music);
+//		PlayMusic.load_backgroundAudio(background_music);
 
 		setPanel(new Menu(this));
 
