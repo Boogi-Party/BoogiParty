@@ -190,15 +190,17 @@ public class RoomList extends JPanel implements MyPanel {
         try {
             fetchRooms();
             // Room ID를 추출
-            System.out.println(rooms);
             int roomId = Integer.parseInt(roomInfo.split(",")[0].split(":")[1].trim());
 
             // 포트 번호 계산 (9500 + Room ID)
             int roomPort = 9500 + roomId;
             for (String room : rooms) {
+                System.out.println(room);
                 if (Integer.parseInt(room.split(",")[0].split(":")[1].trim()) == roomPort - 9500) {
                     // WaitingRoom 화면으로 전환
-                    parent.setPanel(new WaitingRoom(nickname, roomPort, parent));
+                    if (Integer.parseInt(room.split(",")[2].split(":")[1].trim()) <= 3) {
+                        parent.setPanel(new WaitingRoom(nickname, roomPort, parent));
+                    }
                 }
             }
 
