@@ -259,18 +259,29 @@ public class RoomThread extends Thread {
 
                     String command = parts[0];
                     if (command.equals("EXIT_ROOM")) {
+                        clients.remove(this);
+                        readyStates.remove(parts[1]);
                         if (hostname.equals(parts[1])) {
-                            clients.remove(this);
                             hostname = clients.get(0).getUserName();
 
                             for(UserThread user : clients) {
                                 user.sendMessage("NEW_HOST/" + hostname);
                             }
                         }
-                        clients.remove(this);
+
                         broadcastUserList();
                         break;
                     }
+                    else if (command.equals("GET_READY")) {
+                        String nickname = parts[1]; // 닉네임 추출
+                        Boolean isReady = readyStates.get(nickname); // 현재 상태 조회
+                        if (isReady != null) {
+                            sendMessage(isReady ? "TRUE" : "FALSE");
+                        } else {
+                            sendMessage("FALSE"); // 기본값: 준비되지 않음
+                        }
+                    }
+
                     else if (command.equals("START_GAME")) {
                         broadcastGameStart(); // 모든 클라이언트에 게임 시작 명령
                     } else if (command.equals("READY_STATE")) {
