@@ -176,6 +176,10 @@ public class WaitingRoom extends JPanel {
 
     }
 
+    public boolean getIsReady() {
+        return isReady;
+    }
+
     private void toggleReadyState() {
         isReady = !isReady;
         readyButton.setText(isReady ? "준비 해제" : "준비");

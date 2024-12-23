@@ -109,6 +109,7 @@ public class Menu extends JPanel {
             in.close();
 
             if (s.equals("TRUE")) {
+                JOptionPane.showMessageDialog(this, "이미 사용중인 닉네임입니다.", "닉네임 중복", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             parent.setNickname(nickname);

@@ -199,10 +199,10 @@ public class RoomThread extends Thread {
         }
     }
 
-    public void broadcastGameOver(String idx) {
+    public void broadcastGameOver(String winner) {
         synchronized (clients) {
             for (UserThread userThread : clients) {
-                userThread.sendMessage("GAME_OVER/" + idx);
+                userThread.sendMessage("GAME_OVER/" + winner);
             }
         }
     }

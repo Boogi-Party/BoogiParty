@@ -89,11 +89,10 @@ public class ClientThread extends Thread {
                     }
                 }
                 else if ("NEW_HOST".equals(command)) {
-                    hostname = parts[1];
-                    waitingRoom.setHostname(hostname);
+                        hostname = parts[1];
+                        waitingRoom.setHostname(hostname);
                 }
                 else if ("READY_STATE".equals(command)) {
-//                    if (parts.length == 3) {
                         String user = parts[1];
                         String state = parts[2];
                         boolean isReady = "READY".equalsIgnoreCase(state);
@@ -141,7 +140,7 @@ public class ClientThread extends Thread {
                     gameGUI.updateLapLabel(Integer.parseInt(parts[1]));
                 }
                 else if ("GAME_OVER".equals(command)) {
-                    gameGUI.exitGame();
+                    gameGUI.exitGame(parts[1]);
                 }
                 else if ("QUIZ".equals(command)) {
                     gameGUI.quizStart(Integer.parseInt(parts[1]), parts[2]);
@@ -205,7 +204,15 @@ public class ClientThread extends Thread {
                         waitingRoom.setHostname(hostname);
                     }
                     else {
-                        waitingRoom.usernames.get(i).setText(users[i]);
+                        String txt = users[i];
+                        if (waitingRoom.getIsReady()) {
+                            txt += " (준비됨)";
+                            JPanel userPanel = (JPanel) waitingRoom.leftPanel.getComponent(i);
+                            userPanel.setBackground(new Color(144, 238, 144));
+                        }
+
+                        waitingRoom.usernames.get(i).setText(txt);
+
                     }
                     // 폰트 크기 조절 (예: Nanum Gothic, 크기 16)
                     waitingRoom.updateButtonPanel();
@@ -215,7 +222,7 @@ public class ClientThread extends Thread {
                     JPanel userPanel = (JPanel) waitingRoom.leftPanel.getComponent(i);
                     userPanel.setBackground(new Color(220, 220, 255));
                     // 폰트 크기 조절 (예: Nanum Gothic, 크기 16)
-//                    waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
+//                   waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.BOLD, 16));
                     waitingRoom.usernames.get(i).setFont(new Font("Nanum Gothic", Font.ITALIC, 16));
 
                 }

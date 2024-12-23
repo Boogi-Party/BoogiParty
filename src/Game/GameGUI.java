@@ -456,7 +456,10 @@ public class GameGUI extends JPanel {
 				onDiceNumber(dice);
 
 				for (int i = 0; i < dice; i++) {
-					move(idx);
+					boolean flag = move(idx);
+					if (!flag) {
+						return;
+					}
 				}
 
 				offDiceNumber(dice);
@@ -475,7 +478,7 @@ public class GameGUI extends JPanel {
 		nowPlayerLabel.setIcon(imagePlayer[nowPlayerIdx]);
 	}
 
-	public void move(int idx) {
+	public boolean move(int idx) {
 		Player player = playerList.get(idx);
 		Point prePoint = pointManager.getPlayerPoint(idx, player.getPosition());
 		player.increPosition(this);
@@ -492,10 +495,14 @@ public class GameGUI extends JPanel {
 		}
 
 		if (player.get_roundMap() >= 1) {
-			exitGame();
+			if (player.getID() == playerIdx) {
+				clientThread.sendMessage("GAME_OVER/" + player.getName());
+			}
+			return false;
 		}
 
 		playerMove(player, nextPoint);
+		return true;
 	}
 
 	public void playerMove(Player _nowPlayer, Point _interPoint) {
@@ -677,12 +684,32 @@ public class GameGUI extends JPanel {
 		repaint();
 	}
 
-	public void gameOver(int idx) {
-		clientThread.sendMessage("GAME_OVER/" + idx);
+	public void exitGame(String nickname) {
+		// 커스텀 메시지 창 생성
+		// 사용자 확인 버튼 없이 메시지만 보여주는 비모달 JDialog 생성
+		JDialog dialog = new JDialog(parent, "게임 종료", false); // 비모달 설정 (false)
+		dialog.setLayout(new BorderLayout());
+		JLabel label = new JLabel(nickname + "님의 우승!!", SwingConstants.CENTER);
+		label.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
+		dialog.add(label, BorderLayout.CENTER);
+		dialog.setSize(300, 150);
+		dialog.setLocationRelativeTo(parent);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 기본 닫기 설정
+		PlayMusic.play_actionSound("src/audio/GameVictory.wav");
+		dialog.setVisible(true);
+
+		// 일정 시간 후에 다이얼로그와 프레임 종료
+		Timer timer = new Timer(5000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog.dispose(); // 다이얼로그 닫기
+				parent.setScreenNotGameSize();
+				parent.setPanel(waitingRoom);
+			}
+		});
+		timer.setRepeats(false); // 타이머 반복 방지
+		timer.start();
 	}
 
-	public void exitGame() {
-		parent.setScreenNotGameSize();
-		parent.setPanel(waitingRoom);
-	}
+
 }
