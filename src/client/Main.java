@@ -24,7 +24,7 @@ public class Main extends JFrame {
 		setLayout(new BorderLayout()); // 레이아웃을 BorderLayout으로 설정
 		setLocation(20, 50);
 
-		PlayMusic.load_backgroundAudio(background_music);
+//		PlayMusic.load_backgroundAudio(background_music);
 
 		setPanel(new Menu(this));
 
