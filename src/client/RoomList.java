@@ -112,8 +112,8 @@ public class RoomList extends JPanel {
     }
 
     private void updateRoomList() {
+        super.repaint();
         roomListPanel.removeAll(); // 기존의 모든 컴포넌트를 삭제
-
 
         // 방이 없는 경우
         if (rooms.isEmpty()) {

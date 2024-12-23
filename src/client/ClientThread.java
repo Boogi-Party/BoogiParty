@@ -76,11 +76,20 @@ public class ClientThread extends Thread {
 
                 if ("USER_UPDATE".equals(command)) {
                     String[] userNames = parts[1].split(",");
-                    for (String name : userNames) {
-                        System.out.println(name);
+                    String[] readyStates = new String[userNames.length];
+                    for (int i = 0; i < userNames.length; i++) {
+                        sendMessage("GET_READY/" + userNames[i]); // 사용자별 준비 상태 요청
 
+                        try {
+                            // 서버로부터 "TRUE" 또는 "FALSE" 응답 받기
+                            String msg = dis.readUTF();
+                            readyStates[i] = msg; // 응답을 readyStates 배열에 담기
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            readyStates[i] = "FALSE"; // 에러 발생 시 기본값 "FALSE"
+                        }
                     }
-                    updateUserPanel(userNames);
+                    updateUserPanel(userNames, readyStates);
 
                 }
                 else if ("USER_MSG".equals(command)) {
@@ -161,7 +170,7 @@ public class ClientThread extends Thread {
                     }
                 }
                 else {
-                    waitingRoom.appendText(message); // 일반 메시지 출력
+                    //waitingRoom.appendText(message); // 일반 메시지 출력
                 }
             } catch (IOException e) {
                 if (running) {
@@ -195,7 +204,7 @@ public class ClientThread extends Thread {
             waitingRoom.repaint();
         });
     }
-    private void updateUserPanel(String[] users) {
+    private void updateUserPanel(String[] users, String[] readyStates) {
         SwingUtilities.invokeLater(() -> {
             for (int i = 0; i < 4; i++) {
                 if (i < users.length) {
@@ -205,10 +214,14 @@ public class ClientThread extends Thread {
                     }
                     else {
                         String txt = users[i];
-                        if (waitingRoom.getIsReady()) {
+                        if (readyStates[i].equals("TRUE")) {
                             txt += " (준비됨)";
                             JPanel userPanel = (JPanel) waitingRoom.leftPanel.getComponent(i);
                             userPanel.setBackground(new Color(144, 238, 144));
+                        }
+                        else {
+                            JPanel userPanel = (JPanel) waitingRoom.leftPanel.getComponent(i);
+                            userPanel.setBackground(new Color(220, 220, 255));
                         }
 
                         waitingRoom.usernames.get(i).setText(txt);
